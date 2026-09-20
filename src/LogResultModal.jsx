@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { IconClose } from './icons.jsx'
 import SuccessCheck from './SuccessCheck.jsx'
 import PeoplePicker from './PeoplePicker.jsx'
+import SideSummary from './SideSummary.jsx'
 import TurnstileField from './TurnstileField.jsx'
 import { useTurnstile } from './useTurnstile.js'
 import { MAX_NOTE, MAX_STAKES } from '../functions/_lib/text.js'
@@ -111,6 +112,12 @@ export default function LogResultModal({ roster, onClose, onLogged, onDone }) {
           <p className="modal-sub">
             Whoever logs it is trusted. Keep it honest, or don&rsquo;t.
           </p>
+          {/* The thing people ask the first time more than two names are on a
+              result: a side is not a place, it is what the board charges you. */}
+          <p className="hint" style={{ marginBottom: 18 }}>
+            Everyone you put on the winning side takes a win, everyone on the
+            losing side takes a loss, however many that is.
+          </p>
 
           {error ? (
             <p className="form-error" role="alert" style={{ marginBottom: 16 }}>
@@ -152,6 +159,14 @@ export default function LogResultModal({ roster, onClose, onLogged, onDone }) {
             onToggle={toggle(setLosers, setWinners)}
           />
 
+          <SideSummary people={roster} winners={winners} losers={losers} />
+
+          {/* Directly under the sides it is about, not stranded past the
+              browser check. */}
+          <p className="hint" style={{ marginBottom: 18 }}>
+            {sided ? 'Everybody has a side. Send it.' : 'Pick at least one on each side.'}
+          </p>
+
           <div className="modal-block">
             <label className="field-label" htmlFor="result-stakes" style={{ display: 'block', marginBottom: 8 }}>
               Stakes <span className="field-label-note">optional</span>
@@ -170,10 +185,6 @@ export default function LogResultModal({ roster, onClose, onLogged, onDone }) {
           <div className="modal-block">
             <TurnstileField turnstile={turnstile} />
           </div>
-
-          <p className="hint" style={{ marginBottom: 14 }}>
-            {sided ? 'Everybody has a side. Send it.' : 'Pick at least one on each side.'}
-          </p>
 
           <div className="modal-foot">
             <button type="button" className="btn btn-quiet" onClick={onClose} disabled={submitting}>

@@ -128,6 +128,17 @@ export function IconSpark(props) {
   )
 }
 
+// Undecided. The counterpart to the tick, for a bet whose outcome nobody knows
+// yet, so the two floating actions read apart without their labels.
+export function IconClock(props) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="7" cy="7" r="5.1" />
+      <path d="M7 4.2V7l2 1.5" />
+    </svg>
+  )
+}
+
 // Stakes: a glass, because what is on the line here is usually a round.
 export function IconGlass(props) {
   return (

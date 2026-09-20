@@ -114,6 +114,9 @@
     --mark-bg: #3b2f55;
     --mark-ink: #ffd9a8;
 
+    /* Deep enough to read on paper, far too deep to read on a dark panel. */
+    --purple-deep: #b9a4f5;
+
     --gold: #d8b64a;
     --gold-warm: #f0d489;
     --gold-fade: rgba(216, 182, 74, 0);
@@ -956,8 +959,12 @@ a:hover {
 
 /* ---------- floating actions ---------- */
 
+/* Collapsed this is one circle. Open, the two actions rise out of it and the
+   circle becomes the close, so the board keeps its last two rows back. */
+
 .fab-stack {
   bottom: 104px;
+  z-index: 32;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -970,41 +977,88 @@ a:hover {
   pointer-events: auto;
 }
 
-.fab-quiet {
-  padding: 12px 18px;
+.fab-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 31;
   border: 0;
+  padding: 0;
+  /* Dim only. A blur here reads as a modal and takes the board away, and the
+     board is the thing you are about to add a result to. */
+  background: rgba(46, 33, 64, 0.3);
+  cursor: pointer;
+  animation: fadein 0.18s ease both;
+}
+
+.fab-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.fab-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 18px 11px 11px;
+  /* The edge is not decoration: over a dimmed dark board the panel colour and
+     the board behind it are the same value, and a shadow adds nothing there. */
+  border: 1.5px solid var(--border-input);
   border-radius: var(--pill);
-  background: rgba(255, 255, 255, 0.92);
-  color: #2e2140;
+  background: var(--panel);
+  color: var(--ink);
   font-family: var(--tight);
   font-weight: 600;
-  font-size: 14px;
+  font-size: 15px;
+  white-space: nowrap;
   cursor: pointer;
-  box-shadow: 0 14px 28px -16px rgba(46, 33, 64, 0.8);
-  backdrop-filter: blur(8px);
+  box-shadow: 0 16px 32px -16px rgba(46, 33, 64, 0.85);
+  /* Out of the button it came from, so the two read as one control. */
+  transform-origin: bottom right;
+  animation: fabrise 0.34s var(--ease-over) both;
   transition: transform var(--motion);
 }
 
-.fab-quiet:hover {
-  transform: translateY(-3px) scale(1.03);
+.fab-action:hover {
+  transform: translateY(-2px);
+}
+
+.fab-action:active {
+  transform: translateY(1px);
+}
+
+.fab-action-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border-radius: 12px;
+  background: var(--grad-tint);
+  color: var(--orange);
+}
+
+@keyframes fabrise {
+  from { opacity: 0; transform: translateY(16px) scale(0.86); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .fab-main {
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 9px;
-  padding: 17px 22px;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
   border: 0;
-  border-radius: var(--pill);
+  border-radius: 50%;
   background: var(--grad-action);
   color: #fff;
-  font-family: var(--tight);
-  font-weight: 700;
-  font-size: 16px;
   cursor: pointer;
   box-shadow: 0 20px 38px -14px rgba(255, 107, 53, 0.95);
-  transition: transform 180ms var(--ease-over);
+  transition: transform 180ms var(--ease-over), box-shadow var(--motion);
 }
 
 .fab-main:hover {
@@ -1015,20 +1069,30 @@ a:hover {
   transform: translateY(1px) scale(0.99);
 }
 
+/* Plum rather than --ink: the cross on it is white in both themes. */
+.fab-main-open {
+  background: var(--mark-bg);
+  box-shadow: 0 20px 38px -14px rgba(46, 33, 64, 0.95);
+}
+
+.fab-cross {
+  position: relative;
+  transition: transform 240ms var(--ease-over);
+}
+
+.fab-main-open .fab-cross {
+  transform: rotate(45deg);
+}
+
 /* The ring says the button is waiting for something, which on this board is
    always true: somebody has a result they have not logged. */
 .fab-ring {
   position: absolute;
   inset: 0;
-  border-radius: var(--pill);
+  border-radius: 50%;
   border: 2px solid rgba(255, 107, 53, 0.6);
   animation: pulsering 2.4s ease-out infinite;
   pointer-events: none;
-}
-
-.fab-label,
-.fab-plus {
-  position: relative;
 }
 
 /* ---------- open bets carousel ---------- */
@@ -2436,6 +2500,56 @@ textarea.input:focus {
   gap: 8px;
 }
 
+/* Who is on each side, written out under the pickers. With two people the
+   chips are the whole story; with five, reading the fills off ten pills is
+   not, so the sides say themselves in words. */
+.sides {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.side {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 13px;
+  border: 1.5px solid var(--border-input);
+  border-radius: var(--radius);
+  background: var(--panel);
+}
+
+.side-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.side-label-win {
+  color: var(--streak-win-ink);
+}
+
+.side-label-lose {
+  color: var(--purple-deep);
+}
+
+.side-names {
+  display: block;
+  margin-top: 4px;
+  font-family: var(--tight);
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.35;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.side-names-empty {
+  font-weight: 500;
+  color: var(--faint);
+}
+
 .chip {
   display: inline-flex;
   align-items: center;
@@ -2458,6 +2572,13 @@ textarea.input:focus {
 
 .chip:active:not(:disabled) {
   transform: scale(0.96);
+}
+
+/* Both picked fills are fixed light values in either theme, so the name on them
+   has to be a fixed dark one. Reading it from --ink turns it near-white in dark
+   mode and the name disappears into the pill. */
+.chip[aria-pressed='true'] {
+  color: #2e2140;
 }
 
 .chip-win[aria-pressed='true'] {
@@ -2647,12 +2768,19 @@ textarea.input:focus {
   .chip:hover,
   .chip:active,
   .fab-main:hover,
-  .fab-quiet:hover,
+  .fab-main:active,
+  .fab-action:hover,
+  .fab-action:active,
   .nav-item:hover,
   .bet:hover,
   .h2h-chip:hover,
   .history-restore:hover,
   .icon-btn-close:hover {
     transform: none;
+  }
+
+  /* The cross still has to be a cross: this is the state, not the motion. */
+  .fab-main-open .fab-cross {
+    transform: rotate(45deg);
   }
 }
