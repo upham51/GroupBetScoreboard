@@ -29,10 +29,7 @@ function injectedFor(slug) {
   return state
 }
 
-function initialState(slug, scope) {
-  // The shell fetched the board at the default scope, so it only stands in for
-  // the default view.
-  if (scope) return { status: 'loading' }
+function initialState(slug) {
   const state = injectedFor(slug)
   if (state?.status === 'ok' && state.board) return { status: 'ok', board: state.board }
   if (state?.status === 'missing') return { status: 'missing' }
@@ -49,8 +46,8 @@ function topOf(board) {
   return leaders.length === 1 ? leaders[0].member_id : null
 }
 
-export function useBoard(slug, scope) {
-  const [state, setState] = useState(() => initialState(slug, scope))
+export function useBoard(slug) {
+  const [state, setState] = useState(() => initialState(slug))
   // Bumped whenever a fetch brings a different person to the top. The board
   // uses it to replay the gold rule once, marking a real event.
   const [leaderChange, setLeaderChange] = useState(0)
@@ -65,22 +62,17 @@ export function useBoard(slug, scope) {
     setState({ status: 'ok', board })
   }, [])
 
-  const load = useCallback(
-    async (nextScope) => {
-      try {
-        apply(await fetchBoard(slug, nextScope))
-      } catch (err) {
-        if (err.status === 404) setState({ status: 'missing' })
-        else setState({ status: 'error', message: err.message })
-      }
-    },
-    [slug, apply],
-  )
-
-  const reload = useCallback(() => load(scope), [load, scope])
+  const reload = useCallback(async () => {
+    try {
+      apply(await fetchBoard(slug))
+    } catch (err) {
+      if (err.status === 404) setState({ status: 'missing' })
+      else setState({ status: 'error', message: err.message })
+    }
+  }, [slug, apply])
 
   useEffect(() => {
-    const next = initialState(slug, scope)
+    const next = initialState(slug)
     if (next.status === 'ok') {
       // Seed the leader tracker from the inlined board without counting it as a
       // change, so arriving on a board never plays the animation.
@@ -89,8 +81,8 @@ export function useBoard(slug, scope) {
       return
     }
     setState(next)
-    load(scope)
-  }, [slug, scope, load])
+    reload()
+  }, [slug, reload])
 
   return { ...state, reload, apply, leaderChange }
 }

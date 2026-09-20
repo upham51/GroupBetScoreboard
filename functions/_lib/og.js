@@ -139,8 +139,7 @@ function card(board) {
       fontFamily: SANS,
     },
     [
-      // A card that gets forwarded on should still say what slice it covers.
-      line(board.season ? `Group scoreboard \u00b7 ${board.season.name}` : 'Group scoreboard', {
+      line('Group scoreboard', {
         fontFamily: SANS,
         fontSize: 18,
         letterSpacing: 2,

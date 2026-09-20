@@ -1,45 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
-import { IconClose, IconTick } from './icons.jsx'
+import { IconClose } from './icons.jsx'
 import SuccessCheck from './SuccessCheck.jsx'
+import PeoplePicker from './PeoplePicker.jsx'
 import TurnstileField from './TurnstileField.jsx'
 import { useTurnstile } from './useTurnstile.js'
+import { MAX_NOTE, MAX_STAKES } from '../functions/_lib/text.js'
 
-const MAX_NOTE = 120
 
-function Side({ label, hint, roster, picked, blocked, onToggle }) {
-  return (
-    <div className="field">
-      <span className="eyebrow field-label">
-        {label} <span className="field-label-note">{hint}</span>
-      </span>
-      <div className="chips">
-        {roster.map((member) => {
-          const isPicked = picked.includes(member.id)
-          const isBlocked = !isPicked && blocked.includes(member.id)
-          return (
-            <button
-              key={member.id}
-              type="button"
-              className="chip"
-              aria-pressed={isPicked}
-              disabled={isBlocked}
-              title={isBlocked ? `${member.name} is already on the other side.` : undefined}
-              onClick={() => onToggle(member.id)}
-            >
-              {isPicked ? <IconTick className="chip-tick" /> : null}
-              {member.name}
-            </button>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
 
 export default function LogResultModal({ roster, onClose, onLogged, onDone }) {
   const [winners, setWinners] = useState([])
   const [losers, setLosers] = useState([])
   const [note, setNote] = useState('')
+  const [stakes, setStakes] = useState('')
   // idle -> sending -> done. The board is refreshed while the confirmation is
   // on screen, but the new standings are not applied until the modal closes, so
   // the rows are seen moving rather than the reorder happening behind the dim.
@@ -83,7 +56,7 @@ export default function LogResultModal({ roster, onClose, onLogged, onDone }) {
     setError(null)
     let next
     try {
-      next = await onLogged({ winners, losers, note }, turnstile.token)
+      next = await onLogged({ winners, losers, note, stakes }, turnstile.token)
     } catch (err) {
       setError(err.message)
       setPhase('idle')
@@ -131,18 +104,18 @@ export default function LogResultModal({ roster, onClose, onLogged, onDone }) {
           </p>
         ) : null}
 
-        <Side
+        <PeoplePicker
           label="Who won"
           hint="pick one or more"
-          roster={roster}
+          people={roster}
           picked={winners}
           blocked={losers}
           onToggle={toggle(setWinners)}
         />
-        <Side
+        <PeoplePicker
           label="Who lost"
           hint="pick one or more"
-          roster={roster}
+          people={roster}
           picked={losers}
           blocked={winners}
           onToggle={toggle(setLosers)}
@@ -164,6 +137,21 @@ export default function LogResultModal({ roster, onClose, onLogged, onDone }) {
         </div>
 
         <TurnstileField turnstile={turnstile} />
+
+        <div className="field">
+          <label className="eyebrow field-label" htmlFor="result-stakes">
+            Stakes <span className="field-label-note">optional</span>
+          </label>
+          <input
+            id="result-stakes"
+            className="input"
+            type="text"
+            value={stakes}
+            maxLength={MAX_STAKES}
+            placeholder="Loser buys drinks"
+            onChange={(event) => setStakes(event.target.value)}
+          />
+        </div>
 
         <div className="modal-foot">
           <button type="button" className="btn btn-quiet" onClick={onClose} disabled={submitting}>

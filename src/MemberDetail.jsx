@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { fetchMember, fetchHeadToHead } from './api.js'
 import { timeAgo } from './format.js'
+import { IconTrash } from './icons.jsx'
 
 function Highlight({ label, entry, verb }) {
   if (!entry) return null
@@ -73,7 +74,7 @@ function HeadToHead({ slug, member, roster }) {
   )
 }
 
-export default function MemberDetail({ slug, member, roster }) {
+export default function MemberDetail({ slug, member, roster, onRemove }) {
   const [state, setState] = useState({ status: 'loading' })
 
   useEffect(() => {
@@ -99,6 +100,17 @@ export default function MemberDetail({ slug, member, roster }) {
         <span className="detail-sub detail-sub-error" role="alert">
           {state.message}
         </span>
+      ) : null}
+
+      {/* Taking somebody off the board is soft: their row goes, their past
+          results stay in the history, and anybody can put them back. */}
+      {onRemove ? (
+        <div className="detail-item">
+          <button type="button" className="linkish detail-remove" onClick={() => onRemove(member)}>
+            <IconTrash />
+            Take {member.name} off the board
+          </button>
+        </div>
       ) : null}
 
       {/* A person with no results has no best win and no worst loss, so the

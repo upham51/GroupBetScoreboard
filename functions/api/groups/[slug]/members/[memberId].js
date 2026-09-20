@@ -9,15 +9,52 @@
 import { client } from '../../../../_lib/supabase.js'
 import { loadGroup } from '../../../../_lib/board.js'
 import { json, fail, methodNotAllowed } from '../../../../_lib/http.js'
+import { hidePatch, RESTORE_PATCH } from '../../../../_lib/hide.js'
 
 export const onRequestPost = () => methodNotAllowed('GET')
+
+// PATCH -> take somebody off the board, or put them back.
+//
+// Soft, like every other delete here: the member row stays, their past results
+// stay, and the History view shows who went and from where. Their results stop
+// counting because the board filters the standings to the visible roster.
+export async function onRequestPatch({ request, params, env }) {
+  let payload
+  try {
+    payload = await request.json()
+  } catch {
+    return fail(400, 'That request body was not readable as JSON.')
+  }
+
+  const group = await loadGroup(env, params.slug)
+  if (!group) return fail(404, 'No board with that link.')
+
+  const db = client(env)
+  const found = await db.select(
+    `/members?id=eq.${encodeURIComponent(params.memberId)}&group_id=eq.${group.id}&select=id,name,hidden_at&limit=1`,
+  )
+  const member = found?.[0]
+  if (!member) return fail(404, 'Nobody on this board with that id.')
+
+  if (payload?.action === 'restore') {
+    await db.patch(`/members?id=eq.${member.id}`, RESTORE_PATCH)
+    return json({ id: member.id, hidden: false })
+  }
+  if (payload?.action !== 'hide') {
+    return fail(400, 'Say whether to hide or restore this person.')
+  }
+  if (member.hidden_at) return json({ id: member.id, hidden: true })
+
+  await db.patch(`/members?id=eq.${member.id}`, hidePatch(request))
+  return json({ id: member.id, hidden: true })
+}
 
 export async function onRequestGet({ request, params, env }) {
   const group = await loadGroup(env, params.slug)
   if (!group) return fail(404, 'No board with that link.')
 
   const db = client(env)
-  const members = await db.select(`/members?group_id=eq.${group.id}&select=id,name`)
+  const members = await db.select(`/members?group_id=eq.${group.id}&hidden_at=is.null&select=id,name`)
   const roster = new Map((members || []).map((m) => [m.id, m.name]))
 
   const memberId = params.memberId

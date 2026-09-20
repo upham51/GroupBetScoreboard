@@ -35,6 +35,13 @@
   --success-bg: #e7f1ee;
   --success-ink: #0f5c4e;
 
+  --streak-win-bg: #fdf2e2;
+  --streak-win-border: #f0dcbb;
+  --streak-win-ink: #9a5b00;
+  --streak-lose-bg: #eef2f6;
+  --streak-lose-border: #dbe3ec;
+  --streak-lose-ink: #55708c;
+
   /* Hand-drawn chevron for <select>, same geometry as the inline icons. A
      background image cannot inherit currentColor, so the stroke is baked in and
      the dark theme redefines this token. */
@@ -99,6 +106,13 @@
   --success-bg: #142b27;
   --success-ink: #7fd8c4;
 
+  --streak-win-bg: #2e2413;
+  --streak-win-border: #46371c;
+  --streak-win-ink: #e8b872;
+  --streak-lose-bg: #1c2733;
+  --streak-lose-border: #2b3a4a;
+  --streak-lose-ink: #9fb6cc;
+
   --select-caret: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14' fill='none' stroke='%238595a8' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.7 5.4L7 8.7l3.3-3.3'/%3E%3C/svg%3E");
   }
 }
@@ -136,6 +150,13 @@
 
   --success-bg: #142b27;
   --success-ink: #7fd8c4;
+
+  --streak-win-bg: #2e2413;
+  --streak-win-border: #46371c;
+  --streak-win-ink: #e8b872;
+  --streak-lose-bg: #1c2733;
+  --streak-lose-border: #2b3a4a;
+  --streak-lose-ink: #9fb6cc;
 
   --select-caret: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14' fill='none' stroke='%238595a8' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.7 5.4L7 8.7l3.3-3.3'/%3E%3C/svg%3E");
 }
@@ -585,57 +606,218 @@ h1.headline {
   padding: 18px 2px 0;
 }
 
-/* ---------- season control ---------- */
+/* ---------- streak badges ---------- */
 
-.season-bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 14px;
-  margin-top: 10px;
-}
+/* A streak is a standing state rather than a one-time event, so unlike the
+   reorder, the new-leader rule and the confirmation mark, these loop. Meant to
+   be noticed out of the corner of the eye, not watched. */
 
-.season-bar-form {
-  flex-direction: column;
-  align-items: stretch;
-  gap: 8px;
-  max-width: 460px;
-}
-
-.season-form-row {
-  display: flex;
-  flex-wrap: wrap;
+.streak {
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 3px;
+  margin-left: 8px;
+  padding: 2px 8px 2px 6px;
+  border-radius: var(--pill);
+  border: 1px solid var(--border);
+  vertical-align: middle;
 }
 
-.season-input {
-  flex: 1 1 180px;
-  min-width: 0;
-  max-width: 260px;
-}
-
-.season-name {
-  font-family: var(--tight);
+.streak-count {
+  font-size: 12.5px;
   font-weight: 600;
-  font-size: 14.5px;
-  color: var(--ink);
+  font-variant-numeric: tabular-nums;
 }
 
-.season-hint {
-  font-size: 13px;
+.streak-win {
+  background: var(--streak-win-bg);
+  border-color: var(--streak-win-border);
+  color: var(--streak-win-ink);
+}
+
+.streak-lose {
+  background: var(--streak-lose-bg);
+  border-color: var(--streak-lose-border);
+  color: var(--streak-lose-ink);
+}
+
+.streak-icon {
+  flex: none;
+}
+
+.streak-win .streak-icon {
+  transform-origin: 50% 80%;
+  animation: flame-breathe 2.6s ease-in-out infinite;
+}
+
+.streak-win .flame-core {
+  animation: flame-flicker 1.7s ease-in-out infinite;
+}
+
+.streak-lose .streak-icon {
+  animation: frost-drift 4.2s ease-in-out infinite;
+}
+
+.streak-lose .frost-tips {
+  animation: frost-shimmer 3.4s ease-in-out infinite;
+}
+
+@keyframes flame-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.09); }
+}
+
+@keyframes flame-flicker {
+  0%, 100% { opacity: 0.55; }
+  35% { opacity: 1; }
+  70% { opacity: 0.7; }
+}
+
+@keyframes frost-drift {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(7deg); }
+}
+
+@keyframes frost-shimmer {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 1; }
+}
+
+/* ---------- rivalry ---------- */
+
+.rivalry {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 14px 2px 0;
+  font-size: 14.5px;
   line-height: 1.5;
   color: var(--muted);
 }
 
-.season-error {
-  font-size: 13px;
+.rivalry-icon {
+  flex: none;
+  margin-top: 4px;
+  color: var(--faint);
+}
+
+.rivalry strong {
+  font-family: var(--tight);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* ---------- bets and results ---------- */
+
+.section-head {
+  margin: 0 2px 8px;
+}
+
+.open,
+.past {
+  margin-bottom: 20px;
+}
+
+.bet-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bet {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--panel);
+}
+
+/* An open bet is not a result yet, so it reads as a note rather than a row of
+   the scoreboard. */
+.bet-open {
+  border-style: dashed;
+  background: var(--tint);
+}
+
+.bet-main {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.bet-head {
+  font-family: var(--tight);
+  font-weight: 600;
+  font-size: 15.5px;
+  line-height: 1.35;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.bet-note {
+  font-size: 13.5px;
+  color: var(--muted);
+}
+
+/* The stakes are what make this a wager rather than a scored event, so they
+   get their own line and their own label. */
+.bet-stakes {
+  font-size: 13.5px;
+  color: var(--ink);
+}
+
+.bet-when {
+  font-size: 12.5px;
+  color: var(--faint);
+}
+
+.bet-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+
+.bet-remove {
+  flex: none;
+}
+
+.btn-small {
+  padding: 7px 13px;
+  font-size: 13.5px;
+  border-radius: 8px;
+}
+
+.btn-secondary {
+  background: var(--panel);
+  border-color: var(--border);
+  color: var(--navy);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--selected-bg);
+  border-color: var(--selected-border);
+  color: var(--navy-hover);
+}
+
+.detail-remove {
   color: var(--danger-ink);
 }
 
-/* ---------- past seasons ---------- */
+.detail-remove:hover {
+  color: var(--danger-body);
+}
 
-.past-list {
+/* ---------- history ---------- */
+
+.history-list {
   list-style: none;
   margin: 2px 0 0;
   padding: 0;
@@ -644,39 +826,31 @@ h1.headline {
   gap: 8px;
 }
 
-.past-button {
+.history-item {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  width: 100%;
-  text-align: left;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--panel);
-  padding: 12px 14px;
-  cursor: pointer;
-  transition: background-color var(--motion), border-color var(--motion);
 }
 
-.past-button:hover,
-.past-button-open {
-  background: var(--tint);
-  border-color: var(--selected-border);
+.history-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 
-.past-name {
-  font-family: var(--tight);
-  font-weight: 600;
-  font-size: 15px;
+.history-label {
+  font-size: 14.5px;
   color: var(--ink);
+  overflow-wrap: anywhere;
 }
 
-.past-champion {
-  font-size: 13.5px;
-  color: var(--muted);
-}
-
-.past-dates {
+.history-when {
   font-size: 12.5px;
   color: var(--faint);
 }
@@ -846,14 +1020,32 @@ h1.headline {
 
 /* ---------- floating action button ---------- */
 
-.fab {
+.fab-stack {
   position: fixed;
   right: 18px;
   bottom: calc(18px + env(safe-area-inset-bottom, 0px));
   z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fab-item {
   border-radius: var(--pill);
   padding: 14px 20px;
   font-size: 15.5px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* ---------- log-result modal ---------- */
@@ -1098,6 +1290,9 @@ textarea.input {
   *::after {
     transition-duration: 0ms !important;
     animation-duration: 0ms !important;
+    /* The streak badges loop forever; without this they would keep cycling at
+       zero duration instead of simply holding still. */
+    animation-iteration-count: 1 !important;
   }
   .btn:active,
   .chip:active,

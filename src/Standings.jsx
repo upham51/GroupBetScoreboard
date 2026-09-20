@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import MemberDetail from './MemberDetail.jsx'
 import { formatNet, joinNames, timeAgo } from './format.js'
-import { IconChevron } from './icons.jsx'
+import { IconChevron, IconTrash } from './icons.jsx'
+import StreakBadge from './StreakBadge.jsx'
 
 // A position change is a different category of motion from hover and press
 // feedback, so it does not use the 150ms interaction timing. Watching your own
@@ -12,9 +13,12 @@ const EXPAND = { duration: 0.24, ease: [0.2, 0.7, 0.4, 1] }
 
 function LatestResult({ latest }) {
   if (!latest) return null
+  // winners and losers are participant objects, not bare names.
   const headline =
     latest.winners.length && latest.losers.length
-      ? `${joinNames(latest.winners)} beat ${joinNames(latest.losers)}`
+      ? `${joinNames(latest.winners.map((p) => p.name))} beat ${joinNames(
+          latest.losers.map((p) => p.name),
+        )}`
       : 'A result was logged'
   const body = [latest.note, timeAgo(latest.created_at)].filter(Boolean).join(' · ')
   return (
@@ -25,13 +29,14 @@ function LatestResult({ latest }) {
   )
 }
 
-function Cells({ row, ranked, isLeader }) {
+function Cells({ row, ranked, isLeader, streak }) {
   return (
     <>
       <span className="row-rank num">{ranked ? row.rank : ''}</span>
       <span className="row-name">
         {row.name}
         {isLeader ? <span className="eyebrow row-flag">First</span> : null}
+        <StreakBadge streak={streak} />
       </span>
       <span className="row-col row-record">
         {row.wins}-{row.losses}
@@ -51,10 +56,12 @@ export default function Standings({
   roster,
   leaderMemberId,
   latestResult,
+  streaks = {},
   ranked = true,
   showLatest = true,
   interactive = true,
   leaderChange = 0,
+  onRemoveMember,
 }) {
   const [openId, setOpenId] = useState(null)
   const reduceMotion = useReducedMotion()
@@ -98,7 +105,7 @@ export default function Standings({
           if (!interactive) {
             return (
               <li key={row.member_id} className={`row${isLeader ? ' row-leader' : ''}`}>
-                <Cells row={row} ranked={ranked} isLeader={isLeader} />
+                <Cells row={row} ranked={ranked} isLeader={isLeader} streak={streaks[row.member_id]} />
               </li>
             )
           }
@@ -116,7 +123,7 @@ export default function Standings({
                 aria-expanded={isOpen}
                 onClick={() => setOpenId(isOpen ? null : row.member_id)}
               >
-                <Cells row={row} ranked={ranked} isLeader={isLeader} />
+                <Cells row={row} ranked={ranked} isLeader={isLeader} streak={streaks[row.member_id]} />
                 <IconChevron className={`row-chevron${isOpen ? ' row-chevron-open' : ''}`} />
               </button>
 
@@ -130,7 +137,12 @@ export default function Standings({
                     transition={expand}
                     className="detail-wrap"
                   >
-                    <MemberDetail slug={slug} member={row} roster={roster} />
+                    <MemberDetail
+                      slug={slug}
+                      member={row}
+                      roster={roster}
+                      onRemove={onRemoveMember}
+                    />
                   </motion.div>
                 ) : null}
               </AnimatePresence>

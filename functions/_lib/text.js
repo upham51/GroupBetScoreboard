@@ -5,7 +5,7 @@ export const MAX_GROUP_NAME = 60
 export const MAX_MEMBER_NAME = 32
 export const MAX_ROSTER = 40
 export const MAX_NOTE = 120
-export const MAX_SEASON_NAME = 40
+export const MAX_STAKES = 60
 
 const SLUG_SUFFIX_ALPHABET = 'abcdefghjkmnpqrstuvwxyz23456789'
 
@@ -78,12 +78,7 @@ export function cleanNote(input) {
   return note || null
 }
 
-export function cleanSeasonName(input) {
-  return String(input || '').replace(/\s+/g, ' ').trim().slice(0, MAX_SEASON_NAME)
-}
-
-// What the "start a season" control offers before anybody types: the month the
-// season is starting in.
-export function defaultSeasonName(now = new Date()) {
-  return now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+export function cleanStakes(input) {
+  const stakes = String(input || '').replace(/\s+/g, ' ').trim().slice(0, MAX_STAKES)
+  return stakes || null
 }

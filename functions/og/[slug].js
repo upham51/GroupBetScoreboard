@@ -9,12 +9,10 @@
 import { loadBoard } from '../_lib/board.js'
 import { renderBoardPng, OG_WIDTH, OG_HEIGHT } from '../_lib/og.js'
 
-export async function onRequestGet({ request, params, env }) {
+export async function onRequestGet({ params, env }) {
   let board
   try {
-    board = await loadBoard(env, params.slug, {
-      scope: new URL(request.url).searchParams.get('scope') || undefined,
-    })
+    board = await loadBoard(env, params.slug)
   } catch (err) {
     console.error('og: could not load board', err?.message, err?.body ?? '')
     return new Response('The board could not be read.', { status: 502 })

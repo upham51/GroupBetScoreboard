@@ -11,15 +11,13 @@ function onDate(iso) {
 // A screenshot loses its context the second it is forwarded on, so the range
 // the numbers cover is stated on the image itself.
 function coverageLine(board) {
-  if (board.season) {
-    const from = onDate(board.season.started_at)
-    return from ? `${board.season.name}, since ${from}` : board.season.name
-  }
-  if (board.resultCount === 0) return 'All time, no results yet'
+  const open = board.activeBets.length
+  const pending = open > 0 ? ` \u00b7 ${open} still open` : ''
+  if (board.resultCount === 0) return `No results yet${pending}`
   const from = onDate(board.coverage.first_result_at)
   const to = onDate(board.coverage.last_result_at)
-  if (from && to) return from === to ? `All time, ${from}` : `All time, ${from} to ${to}`
-  return 'All time'
+  if (from && to) return (from === to ? from : `${from} to ${to}`) + pending
+  return `All time${pending}`
 }
 
 // The fallback share surface: just the standings, sized so a manual screenshot
@@ -38,6 +36,7 @@ export default function Screenshot({ slug }) {
             <Standings
               standings={board.standings}
               leaderMemberId={board.leaderMemberId}
+              streaks={board.streaks}
               ranked={board.resultCount > 0}
               showLatest={false}
               interactive={false}

@@ -1,26 +1,21 @@
-// POST /api/groups/:slug/results -> log one result.
+// POST /api/groups/:slug/results -> log a result that is already decided.
 //
-// Whoever holds the link is trusted to log honestly. There is no dispute or
-// settlement flow here by design: this is a scoreboard for a friend group, not
-// a ledger. The only checks below are the ones that keep the board coherent
-// (both sides present, nobody on both sides, everyone actually on the roster).
+// This is the quick after-the-fact flow and it still works exactly as it did:
+// pick winners and losers, it lands settled. results.settled_at defaults to
+// now(), so the insert below does not mention it.
+//
+// Whoever logs it is trusted. There is no dispute flow here by design: this is
+// a scoreboard for a friend group, not a ledger. Anything wrong can be removed
+// from the History view, which keeps the row and says who removed it from where.
 
-import { client } from '../../../_lib/supabase.js'
-import { loadGroup, loadSeasons, activeSeasonOf } from '../../../_lib/board.js'
-import { json, fail, methodNotAllowed } from '../../../_lib/http.js'
-import { cleanNote } from '../../../_lib/text.js'
-import { verifyTurnstile } from '../../../_lib/turnstile.js'
+import { client } from '../../../../_lib/supabase.js'
+import { loadGroup } from '../../../../_lib/board.js'
+import { json, fail, methodNotAllowed } from '../../../../_lib/http.js'
+import { cleanNote, cleanStakes } from '../../../../_lib/text.js'
+import { verifyTurnstile } from '../../../../_lib/turnstile.js'
+import { idList, rosterOf } from '../../../../_lib/participants.js'
 
 export const onRequestGet = () => methodNotAllowed('POST')
-
-function idList(input) {
-  if (!Array.isArray(input)) return []
-  const seen = new Set()
-  for (const raw of input) {
-    if (typeof raw === 'string' && raw) seen.add(raw)
-  }
-  return [...seen]
-}
 
 export async function onRequestPost({ request, params, env }) {
   let payload
@@ -33,11 +28,13 @@ export async function onRequestPost({ request, params, env }) {
   const winners = idList(payload?.winners)
   const losers = idList(payload?.losers)
   const note = cleanNote(payload?.note)
+  const stakes = cleanStakes(payload?.stakes)
 
   if (winners.length === 0) return fail(400, 'Pick at least one winner.')
   if (losers.length === 0) return fail(400, 'Pick at least one loser.')
-  const overlap = winners.filter((id) => losers.includes(id))
-  if (overlap.length > 0) return fail(400, 'Somebody is on both sides. Pick one side for each person.')
+  if (winners.some((id) => losers.includes(id))) {
+    return fail(400, 'Somebody is on both sides. Pick one side for each person.')
+  }
 
   // After the cheap checks, so a half-filled form does not burn the token, but
   // before anything touches the database.
@@ -48,22 +45,12 @@ export async function onRequestPost({ request, params, env }) {
   if (!group) return fail(404, 'No board with that link.')
 
   const db = client(env)
-  const members = await db.select(`/members?group_id=eq.${group.id}&select=id`)
-  const roster = new Set((members || []).map((m) => m.id))
-  const unknown = [...winners, ...losers].filter((id) => !roster.has(id))
-  if (unknown.length > 0) {
+  const roster = await rosterOf(db, group.id)
+  if ([...winners, ...losers].some((id) => !roster.has(id))) {
     return fail(400, 'One of those people is not on this roster. Reload the board and try again.')
   }
 
-  // Results belong to whichever season is running when they are logged. With
-  // no season running, season_id stays null and the result only ever counts
-  // toward all-time.
-  const activeSeason = activeSeasonOf(await loadSeasons(env, group.id))
-  const inserted = await db.insert('results', {
-    group_id: group.id,
-    note,
-    season_id: activeSeason?.id ?? null,
-  })
+  const inserted = await db.insert('results', { group_id: group.id, note, stakes })
   const result = inserted?.[0]
   if (!result) return fail(502, 'The result did not save. Nothing was recorded, so try again.')
 

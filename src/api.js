@@ -31,11 +31,7 @@ async function send(path, { method = 'GET', body } = {}) {
 export const createGroup = (name, roster, turnstileToken) =>
   send('/api/groups', { method: 'POST', body: { name, roster, turnstileToken } })
 
-export const fetchBoard = (slug, scope) =>
-  send(
-    `/api/groups/${encodeURIComponent(slug)}` +
-      (scope ? `?scope=${encodeURIComponent(scope)}` : ''),
-  )
+export const fetchBoard = (slug) => send(`/api/groups/${encodeURIComponent(slug)}`)
 
 export const logResult = (slug, payload, turnstileToken) =>
   send(`/api/groups/${encodeURIComponent(slug)}/results`, {
@@ -52,10 +48,31 @@ export const fetchHeadToHead = (slug, memberId, opponentId) =>
       `?vs=${encodeURIComponent(opponentId)}`,
   )
 
-export const startSeason = (slug, name) =>
-  send(`/api/groups/${encodeURIComponent(slug)}/seasons`, { method: 'POST', body: { name } })
+export const fetchHistory = (slug) => send(`/api/groups/${encodeURIComponent(slug)}/history`)
 
-export const endSeason = (slug, seasonId) =>
-  send(`/api/groups/${encodeURIComponent(slug)}/seasons/${encodeURIComponent(seasonId)}`, {
-    method: 'PATCH',
+export const createBet = (slug, payload, turnstileToken) =>
+  send(`/api/groups/${encodeURIComponent(slug)}/bets`, {
+    method: 'POST',
+    body: { ...payload, turnstileToken },
   })
+
+const patchResult = (slug, resultId, body) =>
+  send(`/api/groups/${encodeURIComponent(slug)}/results/${encodeURIComponent(resultId)}`, {
+    method: 'PATCH',
+    body,
+  })
+
+export const settleBet = (slug, betId, payload, turnstileToken) =>
+  patchResult(slug, betId, { action: 'settle', ...payload, turnstileToken })
+
+export const hideResult = (slug, resultId) => patchResult(slug, resultId, { action: 'hide' })
+export const restoreResult = (slug, resultId) => patchResult(slug, resultId, { action: 'restore' })
+
+const patchMember = (slug, memberId, body) =>
+  send(`/api/groups/${encodeURIComponent(slug)}/members/${encodeURIComponent(memberId)}`, {
+    method: 'PATCH',
+    body,
+  })
+
+export const hideMember = (slug, memberId) => patchMember(slug, memberId, { action: 'hide' })
+export const restoreMember = (slug, memberId) => patchMember(slug, memberId, { action: 'restore' })
