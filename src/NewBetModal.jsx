@@ -128,6 +128,16 @@ export default function NewBetModal({ roster, onClose, onCreate, onDone }) {
             }
           />
 
+          {/* Nobody is picking sides here, which is the part that reads as
+              missing once there are more than two names in the bet. */}
+          <p className="hint" style={{ marginTop: -6, marginBottom: 18 }}>
+            Nobody has a side yet, and this counts for nothing until it does.
+            Whoever settles it puts every name above on the winning or the
+            losing side, and each of them takes a win or a loss from it. The
+            stakes are between you: the board writes them down, it does not
+            split them.
+          </p>
+
           <div className="modal-block">
             <label className="field-label" htmlFor="bet-stakes" style={{ display: 'block', marginBottom: 8 }}>
               Stakes <span className="field-label-note">optional</span>

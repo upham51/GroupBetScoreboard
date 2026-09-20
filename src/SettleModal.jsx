@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import PeoplePicker from './PeoplePicker.jsx'
+import SideSummary from './SideSummary.jsx'
 import TurnstileField from './TurnstileField.jsx'
 import SuccessCheck from './SuccessCheck.jsx'
 import { useTurnstile } from './useTurnstile.js'
+import { joinNames } from './format.js'
 import { IconClose } from './icons.jsx'
 
 // Deciding an open bet. Only the people already named on it can win or lose it,
@@ -105,7 +107,13 @@ export default function SettleModal({ bet, onClose, onSettle, onDone }) {
           <p className="modal-sub">
             {bet.note}
             {bet.stakes ? ` · ${bet.stakes}` : ''}
-            {' · everybody named needs a side.'}
+          </p>
+          {/* The thing people ask the first time a bet has more than two names
+              on it: a side is not a place, it is what the board charges you. */}
+          <p className="hint" style={{ marginBottom: 18 }}>
+            Everybody named on this bet needs a side. Everyone you put on the
+            winning side takes a win, everyone on the losing side takes a loss,
+            however many that is.
           </p>
 
           {error ? (
@@ -133,17 +141,21 @@ export default function SettleModal({ bet, onClose, onSettle, onDone }) {
             onToggle={toggle(setLosers, setWinners)}
           />
 
-          <div className="modal-block">
-            <TurnstileField turnstile={turnstile} />
-          </div>
+          <SideSummary people={people} winners={winners} losers={losers} />
 
-          <p className="hint" style={{ marginBottom: 14 }}>
+          {/* Directly under the sides it is about, not stranded past the
+              browser check. */}
+          <p className="hint" style={{ marginBottom: 18 }}>
             {covered
               ? sided
                 ? 'Everybody on this bet has a side. Send it.'
                 : 'Both sides need somebody on them.'
-              : `Still to place: ${undecided.map((p) => p.name).join(', ')}.`}
+              : `Still to place: ${joinNames(undecided.map((p) => p.name))}.`}
           </p>
+
+          <div className="modal-block">
+            <TurnstileField turnstile={turnstile} />
+          </div>
 
           <div className="modal-foot">
             <button type="button" className="btn btn-quiet" onClick={onClose} disabled={submitting}>

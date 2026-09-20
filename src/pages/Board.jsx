@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import ActionStack from '../ActionStack.jsx'
 import Canvas from '../Canvas.jsx'
 import Mascot from '../Mascot.jsx'
 import Toast from '../Toast.jsx'
@@ -15,7 +16,7 @@ import { fetchBoard, logResult, createBet, settleBet, hideResult, hideMember } f
 import { useBoard } from '../useBoard.js'
 import { useToast } from '../useToast.js'
 import { Link } from '../router.jsx'
-import { IconChart, IconPlus, IconSpark, IconTrophy, IconUndo } from '../icons.jsx'
+import { IconChart, IconSpark, IconTrophy, IconUndo } from '../icons.jsx'
 
 const TABS = [
   { key: 'board', label: 'Board', Icon: IconTrophy },
@@ -365,18 +366,7 @@ export default function Board({ slug }) {
       </div>
 
       {canLog && tab === 'board' && !modal && !settling ? (
-        <div className="fab-stack fixed-to-canvas" style={{ alignItems: 'flex-end' }}>
-          <button type="button" className="fab-quiet" onClick={() => setModal('bet')}>
-            Open a bet
-          </button>
-          <button type="button" className="fab-main" onClick={() => setModal('log')}>
-            <span className="fab-ring" aria-hidden="true" />
-            <span className="fab-plus" aria-hidden="true">
-              <IconPlus width="18" height="18" />
-            </span>
-            <span className="fab-label">Log a result</span>
-          </button>
-        </div>
+        <ActionStack onLog={() => setModal('log')} onBet={() => setModal('bet')} />
       ) : null}
 
       {/* A board that could not be read has nothing to switch between, so the
