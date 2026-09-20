@@ -1,0 +1,692 @@
+/* Palette and type for the whole app. functions/_lib/theme.js holds the same
+   colours for the OG image; change both together. */
+
+:root {
+  --ground: #faf8f3;
+  --panel: #ffffff;
+  --tint: #fbfcfd;
+  --border: #e4e0d6;
+
+  --navy: #2c4a6e;
+  --navy-hover: #24405f;
+  --selected-bg: #e8edf4;
+  --selected-border: #d3deec;
+
+  --gold: #c9a227;
+  --gold-tint: #fcf8ea;
+
+  --ink: #1d3450;
+  --muted: #5b6b80;
+  --faint: #7a8798;
+
+  --radius: 10px;
+  --radius-panel: 12px;
+  --pill: 999px;
+
+  /* One duration and curve for everything that moves. */
+  --motion: 150ms cubic-bezier(0.2, 0.7, 0.4, 1);
+  /* The only shadow in the app, reserved for the log-result modal. */
+  --shadow-modal: 0 14px 34px rgba(26, 36, 50, 0.18);
+
+  --sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --tight: 'Inter Tight', 'Inter', system-ui, sans-serif;
+  --serif: 'Averia Serif Libre', Georgia, 'Times New Roman', serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+a {
+  color: var(--navy);
+  text-decoration-color: rgba(44, 74, 110, 0.35);
+  text-underline-offset: 2px;
+  transition: color var(--motion), text-decoration-color var(--motion);
+}
+
+a:hover {
+  color: var(--navy-hover);
+  text-decoration-color: var(--navy-hover);
+}
+
+:focus-visible {
+  outline: 2px solid var(--navy);
+  outline-offset: 2px;
+}
+
+.eyebrow {
+  font-family: var(--sans);
+  font-size: 11.5px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.num {
+  font-family: var(--tight);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+/* ---------- buttons ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--navy);
+  border-radius: var(--radius);
+  background: var(--navy);
+  color: #fff;
+  padding: 11px 18px;
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color var(--motion), border-color var(--motion), color var(--motion),
+    transform var(--motion);
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--navy-hover);
+  border-color: var(--navy-hover);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn:disabled {
+  background: #a9b6c6;
+  border-color: #a9b6c6;
+  cursor: not-allowed;
+}
+
+.btn-quiet {
+  background: transparent;
+  border-color: transparent;
+  color: var(--navy);
+  padding: 8px 10px;
+}
+
+.btn-quiet:hover:not(:disabled) {
+  background: transparent;
+  border-color: transparent;
+  color: var(--navy-hover);
+}
+
+.btn-quiet:disabled {
+  background: transparent;
+  border-color: transparent;
+  color: var(--faint);
+}
+
+/* A text action that reads as a link but behaves as a button. */
+.linkish {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--navy);
+  font-family: var(--sans);
+  font-size: 13.5px;
+  cursor: pointer;
+  transition: color var(--motion);
+}
+
+.linkish:hover {
+  color: var(--navy-hover);
+}
+
+/* ---------- page frames ---------- */
+
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.centered {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 22px;
+  padding-top: 40px;
+  padding-bottom: 40px;
+}
+
+.card {
+  max-width: 560px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+}
+
+/* The serif is reserved for a group's own name, so the landing headline uses
+   Inter Tight like every other heading in the app. */
+a.btn {
+  text-decoration: none;
+}
+
+.headline-tight {
+  margin-top: 10px;
+}
+
+h1.headline {
+  font-family: var(--tight);
+  font-weight: 600;
+  font-size: 30px;
+  line-height: 1.2;
+  margin: 0;
+  color: var(--ink);
+}
+
+.pitch {
+  margin: 0;
+  max-width: 34em;
+  font-size: 17px;
+  color: var(--muted);
+}
+
+/* ---------- board header ---------- */
+
+.board-head {
+  padding-top: 34px;
+  padding-bottom: 18px;
+}
+
+.board-name {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 32px;
+  line-height: 1.2;
+  margin: 4px 0 0;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+/* ---------- standings panel ---------- */
+
+.panel {
+  position: relative;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  overflow: hidden;
+}
+
+/* The one decorative use of gold: a 3px rule fading along the top edge. */
+.panel::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background-image: linear-gradient(90deg, #c9a227, rgba(201, 162, 39, 0));
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.row:last-child {
+  border-bottom: 0;
+}
+
+.row-head {
+  padding: 10px 16px;
+  background: var(--tint);
+  padding-top: 13px;
+}
+
+.row-rank {
+  width: 26px;
+  flex: none;
+  font-size: 13.5px;
+  color: var(--faint);
+}
+
+.row-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: var(--tight);
+  font-weight: 600;
+  font-size: 18.5px;
+  line-height: 1.3;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.row-col {
+  flex: none;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.row-record {
+  width: 72px;
+  font-family: var(--tight);
+  font-weight: 500;
+  font-size: 14.5px;
+  color: var(--muted);
+}
+
+.row-net {
+  width: 58px;
+  font-family: var(--tight);
+  font-weight: 600;
+  font-size: 20px;
+  color: var(--ink);
+}
+
+/* The header cells share the column classes so the numbers line up under their
+   labels, but they must keep eyebrow sizing rather than the numeric sizes above. */
+.row-head .row-col {
+  font-family: var(--sans);
+  font-size: 11.5px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.1em;
+  color: var(--faint);
+}
+
+/* The gold row is never the only signal that somebody is first: the rank column
+   already reads 1, and this flag says it in words. */
+.row-flag {
+  margin-left: 8px;
+  color: #9a7a10;
+  white-space: nowrap;
+}
+
+/* First place, the second and last reserved use of gold. */
+.row-leader {
+  background: var(--gold-tint);
+  border-left: 3px solid var(--gold);
+  padding-left: 13px;
+}
+
+.row-leader .row-net {
+  color: #9a7a10;
+}
+
+.panel-note {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 16px;
+  border-top: 1px solid var(--border);
+  background: var(--tint);
+}
+
+.panel-note-head {
+  font-family: var(--tight);
+  font-weight: 600;
+  font-size: 14.5px;
+  color: var(--ink);
+}
+
+.panel-note-body {
+  font-size: 13.5px;
+  color: var(--muted);
+}
+
+.board-summary {
+  margin: 14px 2px 0;
+  font-size: 14.5px;
+  color: var(--muted);
+}
+
+.board-summary strong {
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.board-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  padding: 18px 2px 120px;
+}
+
+/* ---------- three distinct states ---------- */
+
+.state {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 26px 16px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+}
+
+.state-title {
+  font-family: var(--tight);
+  font-weight: 600;
+  font-size: 17px;
+  color: var(--ink);
+}
+
+.state-body {
+  font-size: 14.5px;
+  color: var(--muted);
+  margin: 0;
+}
+
+.state-error {
+  border-color: #f1d9d6;
+  background: #fcedec;
+}
+
+.state-error .state-title {
+  color: #b3261e;
+}
+
+.state-error .state-body {
+  color: #8f3b35;
+}
+
+.skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.skeleton-row:last-child {
+  border-bottom: 0;
+}
+
+.skeleton-bar {
+  height: 12px;
+  border-radius: var(--pill);
+  background: #eef0ee;
+}
+
+.board-share-fallback {
+  font-size: 13.5px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+/* ---------- floating action button ---------- */
+
+.fab {
+  position: fixed;
+  right: 18px;
+  bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  z-index: 20;
+  border-radius: var(--pill);
+  padding: 14px 20px;
+  font-size: 15.5px;
+}
+
+/* ---------- log-result modal ---------- */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(26, 36, 50, 0.34);
+}
+
+@media (min-width: 560px) {
+  .overlay {
+    align-items: center;
+  }
+}
+
+.modal {
+  width: 100%;
+  max-width: 560px;
+  max-height: calc(100svh - 32px);
+  overflow-y: auto;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-modal);
+  padding: 20px;
+}
+
+.modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.modal-title {
+  font-family: var(--tight);
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 1.3;
+  margin: 0;
+  color: var(--ink);
+}
+
+.modal-sub {
+  margin: 0 0 18px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--navy);
+  cursor: pointer;
+  transition: background-color var(--motion), border-color var(--motion), color var(--motion),
+    transform var(--motion);
+}
+
+.icon-btn:hover {
+  border-color: var(--selected-border);
+  background: var(--selected-bg);
+  color: var(--navy-hover);
+}
+
+.icon-btn:active {
+  transform: translateY(1px);
+}
+
+.field {
+  margin-bottom: 18px;
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.field-label-note {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--pill);
+  background: var(--panel);
+  color: var(--ink);
+  padding: 7px 14px;
+  font-family: var(--tight);
+  font-weight: 500;
+  font-size: 14.5px;
+  cursor: pointer;
+  transition: background-color var(--motion), border-color var(--motion), color var(--motion),
+    transform var(--motion);
+}
+
+.chip:hover:not(:disabled) {
+  border-color: var(--selected-border);
+  background: var(--selected-bg);
+}
+
+.chip:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.chip[aria-pressed='true'] {
+  background: var(--selected-bg);
+  border-color: var(--selected-border);
+  color: #1d3450;
+}
+
+.chip:disabled {
+  color: var(--faint);
+  border-color: #eeebe3;
+  background: var(--panel);
+  cursor: not-allowed;
+}
+
+.chip-tick {
+  flex: none;
+  color: var(--navy);
+}
+
+.input,
+textarea.input {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--panel);
+  padding: 11px 13px;
+  font-size: 15px;
+  transition: border-color var(--motion);
+}
+
+.input::placeholder {
+  color: var(--faint);
+}
+
+.input:hover,
+.input:focus {
+  border-color: var(--selected-border);
+}
+
+textarea.input {
+  resize: vertical;
+  min-height: 92px;
+  font-family: var(--sans);
+  line-height: 1.55;
+}
+
+.hint {
+  margin: 7px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.form-error {
+  margin: 0 0 16px;
+  padding: 11px 13px;
+  border: 1px solid #f1d9d6;
+  border-radius: var(--radius);
+  background: #fcedec;
+  color: #8f3b35;
+  font-size: 13.5px;
+}
+
+.modal-foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  padding-top: 2px;
+}
+
+/* ---------- screenshot view ---------- */
+
+.shot {
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 16px;
+}
+
+.shot-inner {
+  width: 100%;
+  max-width: 560px;
+}
+
+.shot-name {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 1.2;
+  margin: 6px 0 16px;
+  color: var(--ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0ms !important;
+    animation-duration: 0ms !important;
+  }
+  .btn:active,
+  .chip:active,
+  .icon-btn:active {
+    transform: none;
+  }
+}
