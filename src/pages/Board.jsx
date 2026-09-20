@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import Standings from '../Standings.jsx'
 import LogResultModal from '../LogResultModal.jsx'
-import { logResult } from '../api.js'
+import SeasonBar from '../SeasonBar.jsx'
+import PastSeasons from '../PastSeasons.jsx'
+import { fetchBoard, logResult } from '../api.js'
 import { useBoard } from '../useBoard.js'
 import { Link } from '../router.jsx'
 import { IconFrame, IconLink, IconPlus, IconTick } from '../icons.jsx'
@@ -27,8 +29,7 @@ function ShareLink({ slug }) {
   if (state === 'failed') {
     return (
       <span className="board-share-fallback">
-        This browser would not let the page copy for you. The link is{' '}
-        <a href={url}>{url}</a>
+        This browser would not let the page copy for you. The link is <a href={url}>{url}</a>
       </span>
     )
   }
@@ -36,7 +37,7 @@ function ShareLink({ slug }) {
   return (
     <button type="button" className="linkish" onClick={copy}>
       {state === 'copied' ? <IconTick /> : <IconLink />}
-      {state === 'copied' ? 'Link copied' : 'Copy the board\u2019s link'}
+      {state === 'copied' ? 'Link copied' : 'Copy the board’s link'}
     </button>
   )
 }
@@ -57,13 +58,27 @@ function LoadingBoard() {
 }
 
 export default function Board({ slug }) {
-  const { status, board, message, reload } = useBoard(slug)
+  const [scope, setScope] = useState(null)
+  const { status, board, message, reload, apply, leaderChange } = useBoard(slug, scope)
   const [modalOpen, setModalOpen] = useState(false)
+  const [showPast, setShowPast] = useState(false)
 
+  // Save the result, then fetch the board it produced without applying it yet.
+  // The modal holds its confirmation, and the new standings land as it closes
+  // so the reorder happens in view.
   async function submitResult(payload) {
     await logResult(slug, payload)
+    try {
+      return await fetchBoard(slug, scope)
+    } catch {
+      return null
+    }
+  }
+
+  function finishLogging(next) {
     setModalOpen(false)
-    await reload()
+    if (next) apply(next)
+    else reload()
   }
 
   return (
@@ -71,6 +86,15 @@ export default function Board({ slug }) {
       <header className="page board-head">
         <span className="eyebrow">Group scoreboard</span>
         <h1 className="board-name">{status === 'ok' ? board.group.name : 'Board'}</h1>
+        {status === 'ok' ? (
+          <SeasonBar
+            slug={slug}
+            board={board}
+            scope={scope}
+            onScope={setScope}
+            onChanged={reload}
+          />
+        ) : null}
       </header>
 
       <main className="page">
@@ -79,9 +103,7 @@ export default function Board({ slug }) {
         {status === 'error' ? (
           <div className="state state-error" role="alert">
             <span className="state-title">The board could not be read.</span>
-            <p className="state-body">
-              {message} Nothing was changed, and no result was lost.
-            </p>
+            <p className="state-body">{message} Nothing was changed, and no result was lost.</p>
             <p className="state-body">
               <button type="button" className="linkish" onClick={reload}>
                 Try again
@@ -102,23 +124,54 @@ export default function Board({ slug }) {
         {status === 'ok' ? (
           <>
             <Standings
+              slug={slug}
               standings={board.standings}
+              roster={board.roster}
               leaderMemberId={board.leaderMemberId}
               latestResult={board.latestResult}
               /* Before the first result everybody is tied, so a column of 1s
                  would read as a bug rather than as a standing. */
               ranked={board.resultCount > 0}
+              leaderChange={leaderChange}
             />
-            <p className="board-summary">
-              <strong>{board.summary.headline}</strong> {board.summary.detail}
-            </p>
+
+            {board.resultCount === 0 ? (
+              /* An empty board is the roster, not a placeholder. The only thing
+                 missing is the first result, so say exactly that. */
+              <p className="board-summary">
+                No results yet.{' '}
+                <button type="button" className="linkish" onClick={() => setModalOpen(true)}>
+                  Log the first one
+                </button>
+                .
+              </p>
+            ) : (
+              <p className="board-summary">
+                <strong>{board.summary.headline}</strong> {board.summary.detail}
+              </p>
+            )}
+
             <div className="board-actions">
               <ShareLink slug={slug} />
               <Link className="linkish" to={`/g/${encodeURIComponent(slug)}/board`}>
                 <IconFrame />
                 Open the screenshot view
               </Link>
+              {board.pastSeasons.length > 0 ? (
+                <button type="button" className="linkish" onClick={() => setShowPast((v) => !v)}>
+                  {showPast ? 'Hide past seasons' : `Past seasons (${board.pastSeasons.length})`}
+                </button>
+              ) : null}
             </div>
+
+            {showPast ? (
+              <PastSeasons seasons={board.pastSeasons} scope={scope} onScope={setScope} />
+            ) : null}
+
+            {/* How one group's board turns into somebody else's. */}
+            <p className="board-footer">
+              <Link to="/new">Start your own board</Link>
+            </p>
           </>
         ) : null}
       </main>
@@ -135,6 +188,7 @@ export default function Board({ slug }) {
           roster={board.roster}
           onClose={() => setModalOpen(false)}
           onLogged={submitResult}
+          onDone={finishLogging}
         />
       ) : null}
     </>

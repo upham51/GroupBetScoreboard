@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { IconClose, IconTick } from './icons.jsx'
+import SuccessCheck from './SuccessCheck.jsx'
 
 const MAX_NOTE = 120
 
@@ -33,53 +34,75 @@ function Side({ label, hint, roster, picked, blocked, onToggle }) {
   )
 }
 
-export default function LogResultModal({ roster, onClose, onLogged }) {
+export default function LogResultModal({ roster, onClose, onLogged, onDone }) {
   const [winners, setWinners] = useState([])
   const [losers, setLosers] = useState([])
   const [note, setNote] = useState('')
-  const [submitting, setSubmitting] = useState(false)
+  // idle -> sending -> done. The board is refreshed while the confirmation is
+  // on screen, but the new standings are not applied until the modal closes, so
+  // the rows are seen moving rather than the reorder happening behind the dim.
+  const [phase, setPhase] = useState('idle')
   const [error, setError] = useState(null)
   const closeRef = useRef(null)
 
+  // The page behind must stay locked for the whole life of the modal,
+  // including while the confirmation is on screen.
   useEffect(() => {
-    closeRef.current?.focus()
     const previousOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [])
+
+  // Focus and escape-to-close belong to the form only. Once the result is
+  // saved there is nothing left to cancel.
+  useEffect(() => {
+    if (phase !== 'idle') return undefined
+    closeRef.current?.focus()
     const onKeyDown = (event) => {
       if (event.key === 'Escape') onClose()
     }
     document.addEventListener('keydown', onKeyDown)
-    return () => {
-      document.removeEventListener('keydown', onKeyDown)
-      document.body.style.overflow = previousOverflow
-    }
-  }, [onClose])
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [onClose, phase])
 
   const toggle = (setter) => (id) =>
     setter((current) => (current.includes(id) ? current.filter((x) => x !== id) : [...current, id]))
 
   const ready = winners.length > 0 && losers.length > 0
+  const submitting = phase === 'sending'
 
   async function submit(event) {
     event.preventDefault()
-    if (!ready || submitting) return
-    setSubmitting(true)
+    if (!ready || phase !== 'idle') return
+    setPhase('sending')
     setError(null)
+    let next
     try {
-      await onLogged({ winners, losers, note })
+      next = await onLogged({ winners, losers, note })
     } catch (err) {
       setError(err.message)
-      setSubmitting(false)
+      setPhase('idle')
+      return
     }
+    setPhase('done')
+    // Long enough for both strokes to draw, plus a short hold.
+    setTimeout(() => onDone(next), 1100)
   }
 
   return (
     <div
       className="overlay"
       onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose()
+        if (phase === 'idle' && event.target === event.currentTarget) onClose()
       }}
     >
+      {phase === 'done' ? (
+        <div className="modal modal-done" role="dialog" aria-modal="true">
+          <SuccessCheck label="Result logged" />
+        </div>
+      ) : (
       <form
         className="modal"
         role="dialog"
@@ -144,6 +167,7 @@ export default function LogResultModal({ roster, onClose, onLogged }) {
           </button>
         </div>
       </form>
+      )}
     </div>
   )
 }

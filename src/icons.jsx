@@ -63,3 +63,11 @@ export function IconBack(props) {
     </svg>
   )
 }
+
+export function IconChevron(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M3.7 5.4L7 8.7l3.3-3.3" />
+    </svg>
+  )
+}

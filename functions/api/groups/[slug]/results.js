@@ -6,7 +6,7 @@
 // (both sides present, nobody on both sides, everyone actually on the roster).
 
 import { client } from '../../../_lib/supabase.js'
-import { loadGroup } from '../../../_lib/board.js'
+import { loadGroup, loadSeasons, activeSeasonOf } from '../../../_lib/board.js'
 import { json, fail, methodNotAllowed } from '../../../_lib/http.js'
 import { cleanNote } from '../../../_lib/text.js'
 
@@ -49,7 +49,15 @@ export async function onRequestPost({ request, params, env }) {
     return fail(400, 'One of those people is not on this roster. Reload the board and try again.')
   }
 
-  const inserted = await db.insert('results', { group_id: group.id, note })
+  // Results belong to whichever season is running when they are logged. With
+  // no season running, season_id stays null and the result only ever counts
+  // toward all-time.
+  const activeSeason = activeSeasonOf(await loadSeasons(env, group.id))
+  const inserted = await db.insert('results', {
+    group_id: group.id,
+    note,
+    season_id: activeSeason?.id ?? null,
+  })
   const result = inserted?.[0]
   if (!result) return fail(502, 'The result did not save. Nothing was recorded, so try again.')
 

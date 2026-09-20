@@ -1,8 +1,29 @@
 import Standings from '../Standings.jsx'
 import { useBoard } from '../useBoard.js'
+import { Link } from '../router.jsx'
 
-// The fallback share surface: just the standings, no buttons, sized so a manual
-// screenshot comes out clean.
+function onDate(iso) {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return null
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+// A screenshot loses its context the second it is forwarded on, so the range
+// the numbers cover is stated on the image itself.
+function coverageLine(board) {
+  if (board.season) {
+    const from = onDate(board.season.started_at)
+    return from ? `${board.season.name}, since ${from}` : board.season.name
+  }
+  if (board.resultCount === 0) return 'All time, no results yet'
+  const from = onDate(board.coverage.first_result_at)
+  const to = onDate(board.coverage.last_result_at)
+  if (from && to) return from === to ? `All time, ${from}` : `All time, ${from} to ${to}`
+  return 'All time'
+}
+
+// The fallback share surface: just the standings, sized so a manual screenshot
+// comes out clean.
 export default function Screenshot({ slug }) {
   const { status, board, message } = useBoard(slug)
 
@@ -13,12 +34,17 @@ export default function Screenshot({ slug }) {
           <>
             <span className="eyebrow">Group scoreboard</span>
             <h1 className="shot-name">{board.group.name}</h1>
+            <p className="shot-range">{coverageLine(board)}</p>
             <Standings
               standings={board.standings}
               leaderMemberId={board.leaderMemberId}
               ranked={board.resultCount > 0}
               showLatest={false}
+              interactive={false}
             />
+            <p className="shot-footer">
+              <Link to="/new">Start your own board</Link>
+            </p>
           </>
         ) : null}
 

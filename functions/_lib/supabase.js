@@ -56,15 +56,23 @@ export function client(env) {
     return { rows: data || [], count: Number.isFinite(total) ? total : (data || []).length }
   }
 
+  // Postgres functions are exposed by PostgREST at /rpc/<name>. The scoreboard
+  // maths (standings, head to head, best win, worst loss) lives in those
+  // functions rather than here, so this is how it gets called.
+  const rpc = (name, args) => request(`/rpc/${name}`, { method: 'POST', body: args })
+
   return {
     select: (path) => request(path),
     selectWithCount,
+    rpc,
     insert: (table, rows, { returning = true } = {}) =>
       request(`/${table}`, {
         method: 'POST',
         body: rows,
         prefer: returning ? 'return=representation' : 'return=minimal',
       }),
+    patch: (path, body) =>
+      request(path, { method: 'PATCH', body, prefer: 'return=representation' }),
     remove: (path) => request(path, { method: 'DELETE', prefer: 'return=minimal' }),
   }
 }

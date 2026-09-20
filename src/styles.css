@@ -14,10 +14,31 @@
 
   --gold: #c9a227;
   --gold-tint: #fcf8ea;
+  --gold-tint-hover: #f8f2dc;
+  --gold-ink: #9a7a10;
+  --gold-fade: rgba(201, 162, 39, 0);
 
   --ink: #1d3450;
   --muted: #5b6b80;
   --faint: #7a8798;
+  --disabled: #a9b6c6;
+  --skeleton: #eef0ee;
+  --overlay: rgba(26, 36, 50, 0.34);
+  --link-underline: rgba(44, 74, 110, 0.35);
+  --chip-disabled-border: #eeebe3;
+
+  --danger-bg: #fcedec;
+  --danger-border: #f1d9d6;
+  --danger-ink: #b3261e;
+  --danger-body: #8f3b35;
+
+  --success-bg: #e7f1ee;
+  --success-ink: #0f5c4e;
+
+  /* Hand-drawn chevron for <select>, same geometry as the inline icons. A
+     background image cannot inherit currentColor, so the stroke is baked in and
+     the dark theme redefines this token. */
+  --select-caret: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14' fill='none' stroke='%237a8798' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.7 5.4L7 8.7l3.3-3.3'/%3E%3C/svg%3E");
 
   --radius: 10px;
   --radius-panel: 12px;
@@ -28,9 +49,95 @@
   /* The only shadow in the app, reserved for the log-result modal. */
   --shadow-modal: 0 14px 34px rgba(26, 36, 50, 0.18);
 
+  /* Lets form controls, scrollbars and the caret follow the theme too. */
+  color-scheme: light dark;
+
   --sans: 'Inter', system-ui, -apple-system, sans-serif;
   --tight: 'Inter Tight', 'Inter', system-ui, sans-serif;
   --serif: 'Averia Serif Libre', Georgia, 'Times New Roman', serif;
+}
+
+
+/* ---------- dark ---------- */
+/* Everything above reads from the tokens, so the dark theme is only this list.
+   It follows the system setting; there is no toggle in this version, but the
+   data-theme hooks are here so one can be added without touching anything else.
+   The OG image stays light on purpose: a share card has no viewer to ask. */
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+  --ground: #0f1621;
+  --panel: #161f2c;
+  --tint: #1b2634;
+  --border: #26313f;
+
+  --navy: #3c6ea5;
+  --navy-hover: #4f81b7;
+  --selected-bg: #1e2c3d;
+  --selected-border: #33475f;
+
+  --gold: #d8b64a;
+  --gold-tint: #241f14;
+  --gold-tint-hover: #2e2719;
+  --gold-ink: #e0c063;
+  --gold-fade: rgba(216, 182, 74, 0);
+
+  --ink: #e7ecf3;
+  --muted: #a3b1c2;
+  --faint: #8595a8;
+  --disabled: #37465a;
+  --skeleton: #222d3c;
+  --overlay: rgba(6, 10, 16, 0.62);
+  --link-underline: rgba(60, 110, 165, 0.5);
+  --chip-disabled-border: #222c39;
+
+  --danger-bg: #2e1d1c;
+  --danger-border: #4a2b28;
+  --danger-ink: #f2b8b5;
+  --danger-body: #e3a9a5;
+
+  --success-bg: #142b27;
+  --success-ink: #7fd8c4;
+
+  --select-caret: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14' fill='none' stroke='%238595a8' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.7 5.4L7 8.7l3.3-3.3'/%3E%3C/svg%3E");
+  }
+}
+
+:root[data-theme='dark'] {
+  --ground: #0f1621;
+  --panel: #161f2c;
+  --tint: #1b2634;
+  --border: #26313f;
+
+  --navy: #3c6ea5;
+  --navy-hover: #4f81b7;
+  --selected-bg: #1e2c3d;
+  --selected-border: #33475f;
+
+  --gold: #d8b64a;
+  --gold-tint: #241f14;
+  --gold-tint-hover: #2e2719;
+  --gold-ink: #e0c063;
+  --gold-fade: rgba(216, 182, 74, 0);
+
+  --ink: #e7ecf3;
+  --muted: #a3b1c2;
+  --faint: #8595a8;
+  --disabled: #37465a;
+  --skeleton: #222d3c;
+  --overlay: rgba(6, 10, 16, 0.62);
+  --link-underline: rgba(60, 110, 165, 0.5);
+  --chip-disabled-border: #222c39;
+
+  --danger-bg: #2e1d1c;
+  --danger-border: #4a2b28;
+  --danger-ink: #f2b8b5;
+  --danger-body: #e3a9a5;
+
+  --success-bg: #142b27;
+  --success-ink: #7fd8c4;
+
+  --select-caret: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14' fill='none' stroke='%238595a8' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.7 5.4L7 8.7l3.3-3.3'/%3E%3C/svg%3E");
 }
 
 *,
@@ -63,7 +170,7 @@ textarea {
 
 a {
   color: var(--navy);
-  text-decoration-color: rgba(44, 74, 110, 0.35);
+  text-decoration-color: var(--link-underline);
   text-underline-offset: 2px;
   transition: color var(--motion), text-decoration-color var(--motion);
 }
@@ -123,8 +230,8 @@ a:hover {
 }
 
 .btn:disabled {
-  background: #a9b6c6;
-  border-color: #a9b6c6;
+  background: var(--disabled);
+  border-color: var(--disabled);
   cursor: not-allowed;
 }
 
@@ -245,13 +352,13 @@ h1.headline {
   overflow: hidden;
 }
 
-/* The one decorative use of gold: a 3px rule fading along the top edge. */
-.panel::before {
-  content: '';
-  position: absolute;
-  inset: 0 0 auto;
+/* The one decorative use of gold: a 3px rule fading along the top edge. A real
+   element rather than a pseudo-element so it can draw itself in when the lead
+   changes hands. */
+.panel-rule {
   height: 3px;
-  background-image: linear-gradient(90deg, #c9a227, rgba(201, 162, 39, 0));
+  background-image: linear-gradient(90deg, var(--gold), var(--gold-fade));
+  transform-origin: left center;
 }
 
 .row {
@@ -327,7 +434,7 @@ h1.headline {
    already reads 1, and this flag says it in words. */
 .row-flag {
   margin-left: 8px;
-  color: #9a7a10;
+  color: var(--gold-ink);
   white-space: nowrap;
 }
 
@@ -339,8 +446,105 @@ h1.headline {
 }
 
 .row-leader .row-net {
-  color: #9a7a10;
+  color: var(--gold-ink);
 }
+
+/* ---------- interactive standings rows ---------- */
+
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.row-shell {
+  border-bottom: 1px solid var(--border);
+}
+
+.row-shell:last-child {
+  border-bottom: 0;
+}
+
+/* The row itself carries the bottom border when it is a plain list; when it is
+   a tappable shell the shell owns it, so the button must not double it up. */
+.row-button {
+  width: 100%;
+  border: 0;
+  border-bottom: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  transition: background-color var(--motion);
+}
+
+/* .row-button clears the background so the shell can own it, which would also
+   clear first place. Put the gold back, at a specificity that survives. */
+.row-button.row-leader {
+  background: var(--gold-tint);
+  border-left: 3px solid var(--gold);
+}
+
+.row-button:hover,
+.row-shell-open .row-button {
+  background: var(--tint);
+}
+
+.row-button.row-leader:hover {
+  background: var(--gold-tint-hover);
+}
+
+.row-chevron {
+  flex: none;
+  color: var(--faint);
+  transition: transform var(--motion), color var(--motion);
+}
+
+.row-button:hover .row-chevron {
+  color: var(--navy);
+}
+
+.row-chevron-open {
+  transform: rotate(180deg);
+}
+
+.detail-wrap {
+  overflow: hidden;
+}
+
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 4px 16px 18px;
+  background: var(--tint);
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.detail-line {
+  font-family: var(--tight);
+  font-weight: 600;
+  font-size: 15.5px;
+  line-height: 1.4;
+  color: var(--ink);
+}
+
+.detail-sub {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.detail-sub-error {
+  color: var(--danger-ink);
+}
+
 
 .panel-note {
   display: flex;
@@ -378,7 +582,179 @@ h1.headline {
   display: flex;
   flex-wrap: wrap;
   gap: 18px;
-  padding: 18px 2px 120px;
+  padding: 18px 2px 0;
+}
+
+/* ---------- season control ---------- */
+
+.season-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 14px;
+  margin-top: 10px;
+}
+
+.season-bar-form {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  max-width: 460px;
+}
+
+.season-form-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.season-input {
+  flex: 1 1 180px;
+  min-width: 0;
+  max-width: 260px;
+}
+
+.season-name {
+  font-family: var(--tight);
+  font-weight: 600;
+  font-size: 14.5px;
+  color: var(--ink);
+}
+
+.season-hint {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.season-error {
+  font-size: 13px;
+  color: var(--danger-ink);
+}
+
+/* ---------- past seasons ---------- */
+
+.past-list {
+  list-style: none;
+  margin: 2px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.past-button {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--panel);
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: background-color var(--motion), border-color var(--motion);
+}
+
+.past-button:hover,
+.past-button-open {
+  background: var(--tint);
+  border-color: var(--selected-border);
+}
+
+.past-name {
+  font-family: var(--tight);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--ink);
+}
+
+.past-champion {
+  font-size: 13.5px;
+  color: var(--muted);
+}
+
+.past-dates {
+  font-size: 12.5px;
+  color: var(--faint);
+}
+
+/* ---------- the viral line ---------- */
+
+.board-footer,
+.shot-footer {
+  margin: 22px 2px 0;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+
+/* Clearance so the floating button never covers the last line. */
+.board-footer {
+  padding-bottom: 116px;
+}
+
+.shot-footer {
+  margin-top: 18px;
+}
+
+.shot-range {
+  margin: -8px 0 16px;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+
+/* ---------- log-result confirmation ---------- */
+
+.modal-done {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 26px 20px;
+  border-radius: var(--radius);
+  background: var(--success-bg);
+  color: var(--success-ink);
+  width: 100%;
+}
+
+.success-label {
+  font-family: var(--tight);
+  font-weight: 600;
+  font-size: 15.5px;
+}
+
+/* Both shapes draw themselves: the circle first, the check a beat behind. This
+   marks a one-time event, so it is exempt from the 150ms interaction timing. */
+.success-circle {
+  stroke-dasharray: 120;
+  stroke-dashoffset: 120;
+  animation: draw-circle 380ms cubic-bezier(0.2, 0.7, 0.4, 1) forwards;
+}
+
+.success-tick {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  animation: draw-tick 240ms cubic-bezier(0.2, 0.7, 0.4, 1) 300ms forwards;
+}
+
+@keyframes draw-circle {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes draw-tick {
+  to {
+    stroke-dashoffset: 0;
+  }
 }
 
 /* ---------- three distinct states ---------- */
@@ -407,16 +783,16 @@ h1.headline {
 }
 
 .state-error {
-  border-color: #f1d9d6;
-  background: #fcedec;
+  border-color: var(--danger-border);
+  background: var(--danger-bg);
 }
 
 .state-error .state-title {
-  color: #b3261e;
+  color: var(--danger-ink);
 }
 
 .state-error .state-body {
-  color: #8f3b35;
+  color: var(--danger-body);
 }
 
 .skeleton-row {
@@ -434,7 +810,7 @@ h1.headline {
 .skeleton-bar {
   height: 12px;
   border-radius: var(--pill);
-  background: #eef0ee;
+  background: var(--skeleton);
 }
 
 .board-share-fallback {
@@ -465,7 +841,7 @@ h1.headline {
   align-items: flex-end;
   justify-content: center;
   padding: 16px;
-  background: rgba(26, 36, 50, 0.34);
+  background: var(--overlay);
 }
 
 @media (min-width: 560px) {
@@ -586,12 +962,12 @@ h1.headline {
 .chip[aria-pressed='true'] {
   background: var(--selected-bg);
   border-color: var(--selected-border);
-  color: #1d3450;
+  color: var(--ink);
 }
 
 .chip:disabled {
   color: var(--faint);
-  border-color: #eeebe3;
+  border-color: var(--chip-disabled-border);
   background: var(--panel);
   cursor: not-allowed;
 }
@@ -611,6 +987,20 @@ textarea.input {
   padding: 11px 13px;
   font-size: 15px;
   transition: border-color var(--motion);
+}
+
+/* Defined after .input on purpose: .input sets the `background` shorthand,
+   which would otherwise wipe the caret image out. */
+.select {
+  max-width: 260px;
+  appearance: none;
+  padding-right: 34px;
+  background-color: var(--panel);
+  background-image: var(--select-caret);
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 14px 14px;
+  cursor: pointer;
 }
 
 .input::placeholder {
@@ -638,10 +1028,10 @@ textarea.input {
 .form-error {
   margin: 0 0 16px;
   padding: 11px 13px;
-  border: 1px solid #f1d9d6;
+  border: 1px solid var(--danger-border);
   border-radius: var(--radius);
-  background: #fcedec;
-  color: #8f3b35;
+  background: var(--danger-bg);
+  color: var(--danger-body);
   font-size: 13.5px;
 }
 

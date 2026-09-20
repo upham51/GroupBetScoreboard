@@ -32,13 +32,15 @@ const escapeJson = (value) =>
 
 export async function serveShell(context, { view }) {
   const { request, env, params } = context
-  const origin = new URL(request.url).origin
+  const url = new URL(request.url)
+  const origin = url.origin
   const slug = params.slug
+  const scope = url.searchParams.get('scope') || undefined
 
   let board = null
   let loadFailed = false
   try {
-    board = await loadBoard(env, slug)
+    board = await loadBoard(env, slug, { scope })
   } catch (err) {
     console.error('shell: could not load board', err?.message, err?.body ?? '')
     loadFailed = true
