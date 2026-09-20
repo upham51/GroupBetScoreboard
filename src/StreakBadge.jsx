@@ -12,7 +12,7 @@ export default function StreakBadge({ streak }) {
       title={`${streak.length} ${winning ? 'wins' : 'losses'} in a row`}
     >
       {winning ? <IconFlame className="streak-icon" /> : <IconFrost className="streak-icon" />}
-      <span className="streak-count num">{streak.length}</span>
+      <span className="streak-count">{streak.length}</span>
       <span className="visually-hidden">
         {' '}
         {streak.length} {winning ? 'wins' : 'losses'} in a row

@@ -35,7 +35,8 @@ export default function NewBetModal({ roster, onClose, onCreate, onDone }) {
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [onClose, phase])
 
-  const ready = players.length >= 2 && note.trim().length > 0 && turnstile.ready
+  const enough = players.length >= 2 && note.trim().length > 0
+  const ready = enough && turnstile.ready
   const submitting = phase === 'sending'
 
   async function submit(event) {
@@ -53,7 +54,7 @@ export default function NewBetModal({ roster, onClose, onCreate, onDone }) {
       return
     }
     setPhase('done')
-    setTimeout(() => onDone(next), 1100)
+    setTimeout(() => onDone(next), 1400)
   }
 
   return (
@@ -64,29 +65,43 @@ export default function NewBetModal({ roster, onClose, onCreate, onDone }) {
       }}
     >
       {phase === 'done' ? (
-        <div className="modal modal-done" role="dialog" aria-modal="true">
-          <SuccessCheck label="Bet opened" />
+        <div className="modal" role="dialog" aria-modal="true">
+          <div className="modal-grip" aria-hidden="true" />
+          <SuccessCheck label="Bet opened" sub="It counts for nothing until somebody settles it." />
         </div>
       ) : (
-        <form className="modal" role="dialog" aria-modal="true" aria-labelledby="new-bet-title" onSubmit={submit}>
+        <form
+          className="modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="new-bet-title"
+          onSubmit={submit}
+        >
+          <div className="modal-grip" aria-hidden="true" />
           <div className="modal-head">
             <h2 className="modal-title" id="new-bet-title">
               Open a bet
             </h2>
-            <button ref={closeRef} type="button" className="icon-btn" onClick={onClose} aria-label="Close without opening a bet">
+            <button
+              ref={closeRef}
+              type="button"
+              className="icon-btn icon-btn-close"
+              onClick={onClose}
+              aria-label="Close without opening a bet"
+            >
               <IconClose />
             </button>
           </div>
           <p className="modal-sub">For something not decided yet. Settle it when you know.</p>
 
           {error ? (
-            <p className="form-error" role="alert">
+            <p className="form-error" role="alert" style={{ marginBottom: 16 }}>
               {error}
             </p>
           ) : null}
 
-          <div className="field">
-            <label className="eyebrow field-label" htmlFor="bet-note">
+          <div className="modal-block">
+            <label className="field-label" htmlFor="bet-note" style={{ display: 'block', marginBottom: 8 }}>
               What is the bet
             </label>
             <input
@@ -103,6 +118,7 @@ export default function NewBetModal({ roster, onClose, onCreate, onDone }) {
           <PeoplePicker
             label="Who is in"
             hint="two or more"
+            tone="win"
             people={roster}
             picked={players}
             onToggle={(id) =>
@@ -112,13 +128,13 @@ export default function NewBetModal({ roster, onClose, onCreate, onDone }) {
             }
           />
 
-          <div className="field">
-            <label className="eyebrow field-label" htmlFor="bet-stakes">
+          <div className="modal-block">
+            <label className="field-label" htmlFor="bet-stakes" style={{ display: 'block', marginBottom: 8 }}>
               Stakes <span className="field-label-note">optional</span>
             </label>
             <input
               id="bet-stakes"
-              className="input"
+              className="input input-violet"
               type="text"
               value={stakes}
               maxLength={MAX_STAKES}
@@ -127,7 +143,15 @@ export default function NewBetModal({ roster, onClose, onCreate, onDone }) {
             />
           </div>
 
-          <TurnstileField turnstile={turnstile} />
+          <div className="modal-block">
+            <TurnstileField turnstile={turnstile} />
+          </div>
+
+          <p className="hint" style={{ marginBottom: 14 }}>
+            {enough
+              ? 'Two or more are in and the bet has a name. Send it.'
+              : 'A bet needs a name and at least two people in it.'}
+          </p>
 
           <div className="modal-foot">
             <button type="button" className="btn btn-quiet" onClick={onClose} disabled={submitting}>

@@ -38,36 +38,10 @@ export function IconClose(props) {
   )
 }
 
-export function IconLink(props) {
-  return (
-    <svg {...base} {...props}>
-      <path d="M8.1 5.9a2.9 2.9 0 010 4.1l-1.2 1.2a2.9 2.9 0 01-4.1-4.1l.9-.9" />
-      <path d="M5.9 8.1a2.9 2.9 0 010-4.1l1.2-1.2a2.9 2.9 0 014.1 4.1l-.9.9" />
-    </svg>
-  )
-}
-
-export function IconFrame(props) {
-  return (
-    <svg {...base} {...props}>
-      <path d="M2.2 4.1a1.4 1.4 0 011.4-1.4h6.8a1.4 1.4 0 011.4 1.4v5.8a1.4 1.4 0 01-1.4 1.4H3.6a1.4 1.4 0 01-1.4-1.4z" />
-      <path d="M2.2 5.9h9.6" />
-    </svg>
-  )
-}
-
 export function IconBack(props) {
   return (
     <svg {...base} {...props}>
       <path d="M11.3 7H2.7M6.2 3.5L2.7 7l3.5 3.5" />
-    </svg>
-  )
-}
-
-export function IconChevron(props) {
-  return (
-    <svg {...base} {...props}>
-      <path d="M3.7 5.4L7 8.7l3.3-3.3" />
     </svg>
   )
 }
@@ -113,6 +87,53 @@ export function IconScales(props) {
   return (
     <svg {...base} {...props}>
       <path d="M7 2.4v9.2M3.4 11.6h7.2M2.2 5.2h9.6M2.2 5.2L1 8.4h2.4zM11.8 5.2L10.6 8.4H13z" />
+    </svg>
+  )
+}
+
+export function IconArrowRight(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M2.7 7h8.6M7.8 3.5L11.3 7l-3.5 3.5" />
+    </svg>
+  )
+}
+
+// The four bottom-tab glyphs. Drawn on the same 14px grid as everything else
+// and scaled up by the nav, so they stay one family rather than a font.
+
+export function IconTrophy(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M4.2 2.2h5.6v3.1a2.8 2.8 0 01-5.6 0z" />
+      <path d="M4.2 3.1H2.6v.9a2 2 0 002 2M9.8 3.1h1.6v.9a2 2 0 01-2 2" />
+      <path d="M7 8.1v2.1M5.1 11.8h3.8" />
+    </svg>
+  )
+}
+
+export function IconChart(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M2.3 11.7h9.4M4.3 11.7V7.4M7 11.7V3.2M9.7 11.7V6" />
+    </svg>
+  )
+}
+
+export function IconSpark(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M7 1.9l1.3 3.4 3.4 1.3-3.4 1.3L7 11.3 5.7 7.9 2.3 6.6l3.4-1.3z" />
+    </svg>
+  )
+}
+
+// Stakes: a glass, because what is on the line here is usually a round.
+export function IconGlass(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M3.9 2.4h6.2l-.7 5.1a2.5 2.5 0 01-4.8 0z" />
+      <path d="M7 9.8v1.8M5.2 11.6h3.6" />
     </svg>
   )
 }

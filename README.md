@@ -6,14 +6,21 @@ open a bet, settle one, and log a result that is already decided.
 
 ## What it is
 
-- `/` one line and one button.
+- `/` a headline and one button.
 - `/new` a group name and a roster pasted one name per line or comma separated.
-- `/g/<slug>` the board: open bets on top, then standings sorted by net record,
-  the closest rivalry, and a tap-in detail view on each row with head-to-head,
-  best win and worst loss. Two floating buttons: open a bet, or log a result
-  that is already decided. Past bets and History are text links below.
-- `/g/<slug>/board` the same standings with no buttons, for a clean manual
-  screenshot, with a line saying which stretch of time they cover.
+- `/g/<slug>` the board, as four tabs under one header:
+  - **Board**: open bets as a swipeable rail on top, then standings sorted by
+    net record, the latest result and the closest rivalry along the bottom edge
+    of the panel, and a tap-in detail on each row with best win, worst loss and
+    head-to-head. Two floating buttons: open a bet, or log a result that is
+    already decided. Settled bets are a disclosure below.
+  - **Stats**: the settled count, how many settled bets named stakes, win rate
+    per person, the most lopsided result on the board, the longest hot and cold
+    runs, and the pairs who keep meeting.
+  - **History**: everything that has been removed, with a restore on each.
+  - **Share**: the card that goes out with the link, and a copy button.
+- `/g/<slug>/board` the same share card on its own page, chrome-free, for a
+  clean manual screenshot, with a line saying which stretch of time it covers.
 - `/og/<slug>` the current standings rendered as a 1200x630 PNG, referenced from
   the board's `og:image` so pasting a group's link into a chat shows the live
   board as the preview card.
@@ -89,28 +96,51 @@ rather than an empty box.
 least three settled results, since a streak of three cannot exist below that.
 That keeps a large roster from turning into a call per name for nothing.
 
+The Stats tab takes most of what it shows from the board payload it already
+has: the settled count, the win rates and the two runs are all arithmetic on
+`standings` and `streaks`. Three things are not in there, so
+`/api/groups/<slug>/stats` reads the results themselves for them: the most
+lopsided settled result, how many settled results named stakes, and a grudge
+tally across the pairs who have met more than once.
+
+That tally is the same shape as `get_closest_rivalry`, which returns only the
+single tightest pair. Rather than add a seventh function for the top few, the
+endpoint counts the pairs in JavaScript from rows it has already fetched. It
+looks at the most recent 500 settled results and says so in the card when there
+are older ones behind them.
+
+The "owed" number counts settled results that named stakes. The app never sees
+whether a round was actually bought, so the label says what the number is
+rather than implying a debt was tracked.
+
 ## Motion
 
-Four animations are deliberately outside the 150ms interaction timing used for
-hover and press. The first three mark an event rather than routine feedback:
+There is one interaction timing, 160ms on `cubic-bezier(.2,.7,.4,1)`, used for
+every hover, press and focus change. Everything below is deliberately outside
+it, and everything below collapses under `prefers-reduced-motion`.
+
+**Events.** These play once and mark something that actually happened:
 
 1. Rows slide to their new position when a result changes the order, 450ms on a
    weighted curve (Framer Motion layout animation).
 2. The gold rule redraws itself left to right, 700ms, but only when somebody new
    reaches the top. Extending an existing lead does not trigger it, and neither
    does loading the page.
-3. The log-result confirmation draws a circle and then a check, about 560ms,
-   holds, and dismisses itself.
+3. A sheet's confirmation draws a circle and then a check and throws confetti
+   outward behind them, about 900ms, holds, and dismisses itself.
+4. Content rises into place on arrival, 450 to 700ms, staggered by a few frames
+   down a list.
 
-The fourth is different: a streak badge is a standing state, not an event, so
-it loops. The flame breathes and flickers, the frost mark drifts and shimmers,
-both slowly and both restrained. Colour is never the only signal: each badge
-carries a shape and its number.
+**Standing states.** These loop, slowly, because they are describing a
+condition rather than an occurrence: the gradient blobs behind the app, the
+conic mesh in the header, the mascot's float, the pulse ring on the log button,
+the live dot on an open bet, and the streak badges. The flame breathes and
+flickers, the frost mark drifts and shimmers. Colour is never the only signal:
+each badge carries a shape and its number.
 
 The new standings are fetched while the confirmation is on screen but not
-applied until the modal closes, so the reorder happens in view rather than
-behind the dim. Under `prefers-reduced-motion` all four collapse, the looping
-ones to a single held frame.
+applied until the sheet closes, so the reorder happens in view rather than
+behind the dim.
 
 ## Stack
 
@@ -235,11 +265,33 @@ tokens; nothing else in the stylesheet knows about it. There is no toggle in
 this version, but the `data-theme` hooks are in place for one. The OG image
 stays light on purpose: a share card has no viewer to ask.
 
-Gold is used in exactly two places: the 3px rule fading along the top edge of
+Orange is the only action colour. Every button, link and active tab is orange
+or the orange-to-deep-orange wash; violet is the second half of a gradient and
+the fill on the losing side of a picker, never a button of its own. Paper is
+warm (`#FFFBF6`) and the ink is plum (`#2E2140`), so nothing in the app is pure
+white or pure black.
+
+Gold is still used in exactly two places: the rule fading along the top edge of
 the standings panel, and the first-place row. The first-place row only takes it
 when there is a single clear leader with a winning record, so a fresh or
-all-even board stays plain. The rank column and a "first" flag carry the same
+all-even board stays plain. The rank chip and a "first" flag carry the same
 information, so the colour is never the only signal.
+
+The app is laid out as a single phone-width column. On a wide screen that
+column centres itself on a lit, grainy backdrop rather than stretching; the
+bottom nav and the floating buttons follow the column, not the window.
+
+Avatars have no uploads behind them. A person's colour is a gradient picked by
+hashing their member id, so the same person is the same colour in the
+standings, the pickers and the share card, on every device.
+
+Icons are hand-drawn inline SVG on a 14px grid with a 1.7 stroke that inherits
+`currentColor`. There is no icon library and no emoji anywhere in the UI.
+
+The one photograph in the app is the backdrop of the blowout card on the Stats
+tab, hotlinked from Unsplash and loaded lazily. It sits on a plum-to-violet
+gradient and the card reads correctly without it, so a blocked or slow request
+costs nothing but the texture.
 
 ## What this version does not do
 

@@ -38,8 +38,8 @@ function fontFile(family, weight) {
 // style below names it as the last family in its list.
 async function fonts() {
   const wanted = [
-    { family: 'Inter', weight: 400 },
-    { family: 'Inter Tight', weight: 600 },
+    { family: 'Plus Jakarta Sans', weight: 400 },
+    { family: 'Outfit', weight: 600 },
     { family: 'Averia Serif Libre', weight: 700 },
   ]
   const settled = await Promise.allSettled(wanted.map((f) => fontFile(f.family, f.weight)))
@@ -54,8 +54,8 @@ async function fonts() {
   return loaded
 }
 
-const SANS = 'Inter, sans serif'
-const TIGHT = 'Inter Tight, sans serif'
+const SANS = 'Plus Jakarta Sans, sans serif'
+const TIGHT = 'Outfit, sans serif'
 const SERIF = 'Averia Serif Libre, sans serif'
 
 const box = (style, children) => ({ type: 'div', props: { style: { display: 'flex', ...style }, children } })
@@ -98,7 +98,7 @@ function standingsRow(row, { isLeader, isLast }) {
         justifyContent: 'flex-end',
         fontFamily: TIGHT,
         fontSize: 30,
-        color: isLeader ? theme.gold : theme.ink,
+        color: isLeader ? theme.goldInk : row.net < 0 ? theme.faint : theme.ink,
       }),
     ],
   )
@@ -106,7 +106,7 @@ function standingsRow(row, { isLeader, isLast }) {
 
 function panel(board, shown) {
   // The reserved gold rule, fading along the top edge.
-  const rule = box({ height: 3, backgroundImage: `linear-gradient(90deg, ${theme.gold}, rgba(201,162,39,0))` }, [])
+  const rule = box({ height: 4, backgroundImage: `linear-gradient(90deg, ${theme.gold}, #FFD97A 35%, rgba(201,162,39,0))` }, [])
   const rows = shown.map((row, i) =>
     standingsRow(row, {
       isLeader: row.member_id === board.leaderMemberId,
@@ -117,8 +117,7 @@ function panel(board, shown) {
     {
       flexDirection: 'column',
       backgroundColor: theme.panel,
-      border: `1px solid ${theme.border}`,
-      borderRadius: 12,
+      borderRadius: 24,
       overflow: 'hidden',
     },
     [rule, ...rows],
@@ -134,7 +133,8 @@ function card(board) {
       width: OG_WIDTH,
       height: OG_HEIGHT,
       flexDirection: 'column',
-      backgroundColor: theme.ground,
+      backgroundColor: theme.orange,
+      backgroundImage: theme.wash,
       padding: 48,
       fontFamily: SANS,
     },
@@ -144,13 +144,13 @@ function card(board) {
         fontSize: 18,
         letterSpacing: 2,
         textTransform: 'uppercase',
-        color: theme.faint,
+        color: theme.onWashMuted,
       }),
       line(board.group.name, {
         marginTop: 8,
         fontFamily: SERIF,
         fontSize: 54,
-        color: theme.ink,
+        color: theme.onWash,
         overflow: 'hidden',
       }),
 
@@ -168,11 +168,11 @@ function card(board) {
       ),
 
       box({ alignItems: 'flex-end', justifyContent: 'space-between' }, [
-        line(board.summary.headline, { fontFamily: SANS, fontSize: 24, color: theme.muted }),
+        line(board.summary.headline, { fontFamily: SANS, fontSize: 24, color: theme.onWash }),
         line(hidden > 0 ? `and ${hidden} more on the board` : `${board.standings.length} on the board`, {
           fontFamily: SANS,
           fontSize: 20,
-          color: theme.faint,
+          color: theme.onWashMuted,
         }),
       ]),
     ],

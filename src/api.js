@@ -50,6 +50,8 @@ export const fetchHeadToHead = (slug, memberId, opponentId) =>
 
 export const fetchHistory = (slug) => send(`/api/groups/${encodeURIComponent(slug)}/history`)
 
+export const fetchStats = (slug) => send(`/api/groups/${encodeURIComponent(slug)}/stats`)
+
 export const createBet = (slug, payload, turnstileToken) =>
   send(`/api/groups/${encodeURIComponent(slug)}/bets`, {
     method: 'POST',

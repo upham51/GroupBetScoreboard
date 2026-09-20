@@ -6,22 +6,20 @@ import TurnstileField from './TurnstileField.jsx'
 import { useTurnstile } from './useTurnstile.js'
 import { MAX_NOTE, MAX_STAKES } from '../functions/_lib/text.js'
 
-
-
 export default function LogResultModal({ roster, onClose, onLogged, onDone }) {
   const [winners, setWinners] = useState([])
   const [losers, setLosers] = useState([])
   const [note, setNote] = useState('')
   const [stakes, setStakes] = useState('')
   // idle -> sending -> done. The board is refreshed while the confirmation is
-  // on screen, but the new standings are not applied until the modal closes, so
+  // on screen, but the new standings are not applied until the sheet closes, so
   // the rows are seen moving rather than the reorder happening behind the dim.
   const [phase, setPhase] = useState('idle')
   const [error, setError] = useState(null)
   const turnstile = useTurnstile()
   const closeRef = useRef(null)
 
-  // The page behind must stay locked for the whole life of the modal,
+  // The page behind must stay locked for the whole life of the sheet,
   // including while the confirmation is on screen.
   useEffect(() => {
     const previousOverflow = document.body.style.overflow
@@ -43,10 +41,13 @@ export default function LogResultModal({ roster, onClose, onLogged, onDone }) {
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [onClose, phase])
 
-  const toggle = (setter) => (id) =>
+  const toggle = (setter, other) => (id) => {
     setter((current) => (current.includes(id) ? current.filter((x) => x !== id) : [...current, id]))
+    other((current) => current.filter((x) => x !== id))
+  }
 
-  const ready = winners.length > 0 && losers.length > 0 && turnstile.ready
+  const sided = winners.length > 0 && losers.length > 0
+  const ready = sided && turnstile.ready
   const submitting = phase === 'sending'
 
   async function submit(event) {
@@ -66,7 +67,7 @@ export default function LogResultModal({ roster, onClose, onLogged, onDone }) {
     }
     setPhase('done')
     // Long enough for both strokes to draw, plus a short hold.
-    setTimeout(() => onDone(next), 1100)
+    setTimeout(() => onDone(next), 1400)
   }
 
   return (
@@ -77,91 +78,112 @@ export default function LogResultModal({ roster, onClose, onLogged, onDone }) {
       }}
     >
       {phase === 'done' ? (
-        <div className="modal modal-done" role="dialog" aria-modal="true">
-          <SuccessCheck label="Result logged" />
+        <div className="modal" role="dialog" aria-modal="true">
+          <div className="modal-grip" aria-hidden="true" />
+          <SuccessCheck
+            label="Result logged"
+            sub="The standings are about to move. Watch the rows."
+          />
         </div>
       ) : (
-      <form
-        className="modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="log-result-title"
-        onSubmit={submit}
-      >
-        <div className="modal-head">
-          <h2 className="modal-title" id="log-result-title">
-            Log a result
-          </h2>
-          <button ref={closeRef} type="button" className="icon-btn" onClick={onClose} aria-label="Close without logging">
-            <IconClose />
-          </button>
-        </div>
-        <p className="modal-sub">Whoever logs it is trusted, so keep it honest.</p>
-
-        {error ? (
-          <p className="form-error" role="alert">
-            {error}
+        <form
+          className="modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="log-result-title"
+          onSubmit={submit}
+        >
+          <div className="modal-grip" aria-hidden="true" />
+          <div className="modal-head">
+            <h2 className="modal-title" id="log-result-title">
+              Log a result
+            </h2>
+            <button
+              ref={closeRef}
+              type="button"
+              className="icon-btn icon-btn-close"
+              onClick={onClose}
+              aria-label="Close without logging"
+            >
+              <IconClose />
+            </button>
+          </div>
+          <p className="modal-sub">
+            Whoever logs it is trusted. Keep it honest, or don&rsquo;t.
           </p>
-        ) : null}
 
-        <PeoplePicker
-          label="Who won"
-          hint="pick one or more"
-          people={roster}
-          picked={winners}
-          blocked={losers}
-          onToggle={toggle(setWinners)}
-        />
-        <PeoplePicker
-          label="Who lost"
-          hint="pick one or more"
-          people={roster}
-          picked={losers}
-          blocked={winners}
-          onToggle={toggle(setLosers)}
-        />
+          {error ? (
+            <p className="form-error" role="alert" style={{ marginBottom: 16 }}>
+              {error}
+            </p>
+          ) : null}
 
-        <div className="field">
-          <label className="eyebrow field-label" htmlFor="result-note">
-            Note <span className="field-label-note">optional</span>
-          </label>
-          <input
-            id="result-note"
-            className="input"
-            type="text"
-            value={note}
-            maxLength={MAX_NOTE}
-            placeholder="What was the bet?"
-            onChange={(event) => setNote(event.target.value)}
+          <div className="modal-block">
+            <label className="field-label" htmlFor="result-note" style={{ display: 'block', marginBottom: 8 }}>
+              What was the bet <span className="field-label-note">optional</span>
+            </label>
+            <input
+              id="result-note"
+              className="input"
+              type="text"
+              value={note}
+              maxLength={MAX_NOTE}
+              placeholder="Chiefs cover the spread"
+              onChange={(event) => setNote(event.target.value)}
+            />
+          </div>
+
+          <PeoplePicker
+            label="Who won"
+            hint="pick one or more"
+            tone="win"
+            people={roster}
+            picked={winners}
+            blocked={losers}
+            onToggle={toggle(setWinners, setLosers)}
           />
-        </div>
-
-        <TurnstileField turnstile={turnstile} />
-
-        <div className="field">
-          <label className="eyebrow field-label" htmlFor="result-stakes">
-            Stakes <span className="field-label-note">optional</span>
-          </label>
-          <input
-            id="result-stakes"
-            className="input"
-            type="text"
-            value={stakes}
-            maxLength={MAX_STAKES}
-            placeholder="Loser buys drinks"
-            onChange={(event) => setStakes(event.target.value)}
+          <PeoplePicker
+            label="Who lost"
+            hint="pick one or more"
+            tone="lose"
+            people={roster}
+            picked={losers}
+            blocked={winners}
+            onToggle={toggle(setLosers, setWinners)}
           />
-        </div>
 
-        <div className="modal-foot">
-          <button type="button" className="btn btn-quiet" onClick={onClose} disabled={submitting}>
-            Close
-          </button>
-          <button type="submit" className="btn" disabled={!ready || submitting}>
-            {submitting ? 'Logging the result' : 'Log the result'}
-          </button>
-        </div>
-      </form>
+          <div className="modal-block">
+            <label className="field-label" htmlFor="result-stakes" style={{ display: 'block', marginBottom: 8 }}>
+              Stakes <span className="field-label-note">optional</span>
+            </label>
+            <input
+              id="result-stakes"
+              className="input input-violet"
+              type="text"
+              value={stakes}
+              maxLength={MAX_STAKES}
+              placeholder="Loser buys drinks"
+              onChange={(event) => setStakes(event.target.value)}
+            />
+          </div>
+
+          <div className="modal-block">
+            <TurnstileField turnstile={turnstile} />
+          </div>
+
+          <p className="hint" style={{ marginBottom: 14 }}>
+            {sided ? 'Everybody has a side. Send it.' : 'Pick at least one on each side.'}
+          </p>
+
+          <div className="modal-foot">
+            <button type="button" className="btn btn-quiet" onClick={onClose} disabled={submitting}>
+              Close
+            </button>
+            <button type="submit" className="btn" disabled={!ready || submitting}>
+              {submitting ? 'Logging the result' : 'Log the result'}
+            </button>
+          </div>
+        </form>
       )}
     </div>
   )

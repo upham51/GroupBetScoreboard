@@ -1,32 +1,45 @@
 import { joinNames, timeAgo } from './format.js'
-import { IconTrash } from './icons.jsx'
+import { IconGlass, IconTrash } from './icons.jsx'
 
 // Bets that have been made but not decided. They count toward nothing until
-// somebody settles them.
+// somebody settles them, so they sit above the standings as their own rail
+// rather than inside the panel: a queue of unfinished business you swipe
+// through, not a row of the scoreboard.
 export default function ActiveBets({ bets, onSettle, onRemove, busyId }) {
   if (!bets.length) return null
   return (
     <section className="open">
-      <h2 className="section-head">
-        <span className="eyebrow">Open bets</span>
-      </h2>
-      <ul className="bet-list">
+      <div className="open-head">
+        <h2 className="eyebrow" style={{ margin: 0, whiteSpace: 'nowrap' }}>
+          Open bets
+        </h2>
+        <span className="open-head-count">
+          {bets.length} undecided
+        </span>
+      </div>
+
+      <ul className="bet-rail">
         {bets.map((bet) => (
-          <li key={bet.id} className="bet bet-open">
-            <div className="bet-main">
-              <span className="bet-head">{bet.note}</span>
-              <span className="bet-note">{joinNames(bet.players.map((p) => p.name))}</span>
-              {bet.stakes ? (
-                <span className="bet-stakes">
-                  <span className="eyebrow">Stakes</span> {bet.stakes}
-                </span>
-              ) : null}
-              <span className="bet-when">Opened {timeAgo(bet.created_at)}</span>
+          <li key={bet.id} className="bet">
+            <span className="bet-glow" aria-hidden="true" />
+            <div className="bet-live">
+              <span className="bet-dot" aria-hidden="true" />
+              <span className="bet-live-label">Live</span>
             </div>
+            <div className="bet-head">{bet.note}</div>
+            <div className="bet-people">{joinNames(bet.players.map((p) => p.name))}</div>
+            {bet.stakes ? (
+              <div className="bet-stakes">
+                <IconGlass aria-hidden="true" />
+                {bet.stakes}
+              </div>
+            ) : null}
+            <span className="bet-when">Opened {timeAgo(bet.created_at)}</span>
+
             <div className="bet-actions">
               <button
                 type="button"
-                className="btn btn-small"
+                className="bet-settle"
                 onClick={() => onSettle(bet)}
                 disabled={busyId === bet.id}
               >
@@ -34,11 +47,11 @@ export default function ActiveBets({ bets, onSettle, onRemove, busyId }) {
               </button>
               <button
                 type="button"
-                className="icon-btn"
+                className="bet-remove"
                 onClick={() => onRemove(bet)}
                 disabled={busyId === bet.id}
-                aria-label={`Remove the bet: ${bet.note}`}
-                title="Remove from the board"
+                aria-label={`Take the bet off the board: ${bet.note}`}
+                title="Take it off the board"
               >
                 <IconTrash />
               </button>
