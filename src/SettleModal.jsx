@@ -37,7 +37,8 @@ export default function SettleModal({ bet, onClose, onSettle, onDone }) {
   const people = bet.players
   const undecided = people.filter((p) => !winners.includes(p.id) && !losers.includes(p.id))
   const covered = undecided.length === 0
-  const ready = covered && winners.length > 0 && losers.length > 0 && turnstile.ready
+  const sided = covered && winners.length > 0 && losers.length > 0
+  const ready = sided && turnstile.ready
   const submitting = phase === 'sending'
 
   const toggle = (setter, other) => (id) => {
@@ -60,7 +61,7 @@ export default function SettleModal({ bet, onClose, onSettle, onDone }) {
       return
     }
     setPhase('done')
-    setTimeout(() => onDone(next), 1100)
+    setTimeout(() => onDone(next), 1400)
   }
 
   return (
@@ -71,28 +72,44 @@ export default function SettleModal({ bet, onClose, onSettle, onDone }) {
       }}
     >
       {phase === 'done' ? (
-        <div className="modal modal-done" role="dialog" aria-modal="true">
-          <SuccessCheck label="Bet settled" />
+        <div className="modal" role="dialog" aria-modal="true">
+          <div className="modal-grip" aria-hidden="true" />
+          <SuccessCheck
+            label="Bet settled"
+            sub="The standings are about to move. Watch the rows."
+          />
         </div>
       ) : (
-        <form className="modal" role="dialog" aria-modal="true" aria-labelledby="settle-title" onSubmit={submit}>
+        <form
+          className="modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="settle-title"
+          onSubmit={submit}
+        >
+          <div className="modal-grip" aria-hidden="true" />
           <div className="modal-head">
             <h2 className="modal-title" id="settle-title">
               Settle this bet
             </h2>
-            <button ref={closeRef} type="button" className="icon-btn" onClick={onClose} aria-label="Close without settling">
+            <button
+              ref={closeRef}
+              type="button"
+              className="icon-btn icon-btn-close"
+              onClick={onClose}
+              aria-label="Close without settling"
+            >
               <IconClose />
             </button>
           </div>
-          <p className="modal-sub">{bet.note}</p>
-          {bet.stakes ? (
-            <p className="modal-sub">
-              <span className="eyebrow">Stakes</span> {bet.stakes}
-            </p>
-          ) : null}
+          <p className="modal-sub">
+            {bet.note}
+            {bet.stakes ? ` · ${bet.stakes}` : ''}
+            {' · everybody named needs a side.'}
+          </p>
 
           {error ? (
-            <p className="form-error" role="alert">
+            <p className="form-error" role="alert" style={{ marginBottom: 16 }}>
               {error}
             </p>
           ) : null}
@@ -100,6 +117,7 @@ export default function SettleModal({ bet, onClose, onSettle, onDone }) {
           <PeoplePicker
             label="Who won"
             hint="pick one or more"
+            tone="win"
             people={people}
             picked={winners}
             blocked={losers}
@@ -108,19 +126,24 @@ export default function SettleModal({ bet, onClose, onSettle, onDone }) {
           <PeoplePicker
             label="Who lost"
             hint="pick one or more"
+            tone="lose"
             people={people}
             picked={losers}
             blocked={winners}
             onToggle={toggle(setLosers, setWinners)}
           />
 
-          <p className="hint">
+          <div className="modal-block">
+            <TurnstileField turnstile={turnstile} />
+          </div>
+
+          <p className="hint" style={{ marginBottom: 14 }}>
             {covered
-              ? 'Everybody on this bet has a side.'
+              ? sided
+                ? 'Everybody on this bet has a side. Send it.'
+                : 'Both sides need somebody on them.'
               : `Still to place: ${undecided.map((p) => p.name).join(', ')}.`}
           </p>
-
-          <TurnstileField turnstile={turnstile} />
 
           <div className="modal-foot">
             <button type="button" className="btn btn-quiet" onClick={onClose} disabled={submitting}>

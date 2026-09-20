@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { createGroup } from '../api.js'
+import Canvas from '../Canvas.jsx'
 import { Link } from '../router.jsx'
 import { IconBack } from '../icons.jsx'
 import TurnstileField from '../TurnstileField.jsx'
@@ -37,26 +38,28 @@ export default function NewGroup() {
   }
 
   return (
-    <main className="page centered">
-      <div>
-        <Link className="linkish" to="/">
-          <IconBack />
+    <Canvas>
+      <header className="hero hero-violet">
+        <span className="hero-orb" aria-hidden="true" />
+        <Link className="hero-back" to="/">
+          <IconBack aria-hidden="true" />
           Back
         </Link>
-        <h1 className="headline headline-tight">
-          Start your group&rsquo;s board
-        </h1>
-      </div>
+        <h1 className="hero-title hero-title-lg">Start your group&rsquo;s board</h1>
+        <p className="hero-line">
+          Two names minimum. A result needs two sides, and somebody has to lose.
+        </p>
+      </header>
 
-      <form className="card" onSubmit={submit}>
+      <form className="form" onSubmit={submit}>
         {error ? (
           <p className="form-error" role="alert">
             {error}
           </p>
         ) : null}
 
-        <div className="field">
-          <label className="eyebrow field-label" htmlFor="group-name">
+        <div className="field" style={{ animationDelay: '0.05s' }}>
+          <label className="field-label" htmlFor="group-name">
             Group name
           </label>
           <input
@@ -71,36 +74,39 @@ export default function NewGroup() {
           />
         </div>
 
-        <div className="field">
-          <label className="eyebrow field-label" htmlFor="group-roster">
+        <div className="field" style={{ animationDelay: '0.12s' }}>
+          <label className="field-label" htmlFor="group-roster">
             Who is in <span className="field-label-note">one per line, or separated by commas</span>
           </label>
           <textarea
             id="group-roster"
             className="input"
             value={roster}
-            rows={6}
+            rows={5}
             placeholder={'Dana\nSam\nAlex'}
             onChange={(event) => setRoster(event.target.value)}
           />
-          <p className="hint">{rosterHint(names)}</p>
+          <div className="counter">
+            <span className="counter-chip">{names.length}</span>
+            <span className="counter-text">{rosterHint(names)}</span>
+          </div>
         </div>
 
-        <TurnstileField turnstile={turnstile} />
-
-        <div className="modal-foot">
-          <button type="submit" className="btn" disabled={!ready || submitting}>
-            {submitting ? 'Creating the board' : 'Create the board'}
-          </button>
+        <div className="field" style={{ animationDelay: '0.18s' }}>
+          <TurnstileField turnstile={turnstile} />
         </div>
+
+        <button type="submit" className="btn btn-block" disabled={!ready || submitting}>
+          {submitting ? 'Creating the board' : 'Create the board'}
+        </button>
       </form>
-    </main>
+    </Canvas>
   )
 }
 
 function rosterHint(names) {
-  if (names.length === 0) return 'Nobody on the roster yet. Two names is the minimum, because a result needs two sides.'
-  if (names.length === 1) return `One name so far. Add at least one more, because a result needs two sides.`
+  if (names.length === 0) return 'Nobody yet. Two is the minimum, because a result needs a loser.'
+  if (names.length === 1) return 'One name. Somebody has to be wrong for this to work.'
   return `${names.length} names ready. Only these ${names.length} can be picked when a result gets logged, and blanks and repeats were dropped.${
     names.length >= MAX_ROSTER ? ` ${MAX_ROSTER} is the most one board holds.` : ''
   }`
