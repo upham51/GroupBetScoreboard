@@ -66,8 +66,8 @@ export default function Board({ slug }) {
   // Save the result, then fetch the board it produced without applying it yet.
   // The modal holds its confirmation, and the new standings land as it closes
   // so the reorder happens in view.
-  async function submitResult(payload) {
-    await logResult(slug, payload)
+  async function submitResult(payload, turnstileToken) {
+    await logResult(slug, payload, turnstileToken)
     try {
       return await fetchBoard(slug, scope)
     } catch {

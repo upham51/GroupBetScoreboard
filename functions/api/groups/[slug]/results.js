@@ -9,6 +9,7 @@ import { client } from '../../../_lib/supabase.js'
 import { loadGroup, loadSeasons, activeSeasonOf } from '../../../_lib/board.js'
 import { json, fail, methodNotAllowed } from '../../../_lib/http.js'
 import { cleanNote } from '../../../_lib/text.js'
+import { verifyTurnstile } from '../../../_lib/turnstile.js'
 
 export const onRequestGet = () => methodNotAllowed('POST')
 
@@ -37,6 +38,11 @@ export async function onRequestPost({ request, params, env }) {
   if (losers.length === 0) return fail(400, 'Pick at least one loser.')
   const overlap = winners.filter((id) => losers.includes(id))
   if (overlap.length > 0) return fail(400, 'Somebody is on both sides. Pick one side for each person.')
+
+  // After the cheap checks, so a half-filled form does not burn the token, but
+  // before anything touches the database.
+  const check = await verifyTurnstile(env, payload?.turnstileToken)
+  if (!check.ok) return fail(check.status, check.message)
 
   const group = await loadGroup(env, params.slug)
   if (!group) return fail(404, 'No board with that link.')

@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { IconClose, IconTick } from './icons.jsx'
 import SuccessCheck from './SuccessCheck.jsx'
+import TurnstileField from './TurnstileField.jsx'
+import { useTurnstile } from './useTurnstile.js'
 
 const MAX_NOTE = 120
 
@@ -43,6 +45,7 @@ export default function LogResultModal({ roster, onClose, onLogged, onDone }) {
   // the rows are seen moving rather than the reorder happening behind the dim.
   const [phase, setPhase] = useState('idle')
   const [error, setError] = useState(null)
+  const turnstile = useTurnstile()
   const closeRef = useRef(null)
 
   // The page behind must stay locked for the whole life of the modal,
@@ -70,7 +73,7 @@ export default function LogResultModal({ roster, onClose, onLogged, onDone }) {
   const toggle = (setter) => (id) =>
     setter((current) => (current.includes(id) ? current.filter((x) => x !== id) : [...current, id]))
 
-  const ready = winners.length > 0 && losers.length > 0
+  const ready = winners.length > 0 && losers.length > 0 && turnstile.ready
   const submitting = phase === 'sending'
 
   async function submit(event) {
@@ -80,10 +83,12 @@ export default function LogResultModal({ roster, onClose, onLogged, onDone }) {
     setError(null)
     let next
     try {
-      next = await onLogged({ winners, losers, note })
+      next = await onLogged({ winners, losers, note }, turnstile.token)
     } catch (err) {
       setError(err.message)
       setPhase('idle')
+      // The token was spent on that attempt, so the next one needs a fresh one.
+      turnstile.reset()
       return
     }
     setPhase('done')
@@ -157,6 +162,8 @@ export default function LogResultModal({ roster, onClose, onLogged, onDone }) {
             onChange={(event) => setNote(event.target.value)}
           />
         </div>
+
+        <TurnstileField turnstile={turnstile} />
 
         <div className="modal-foot">
           <button type="button" className="btn btn-quiet" onClick={onClose} disabled={submitting}>

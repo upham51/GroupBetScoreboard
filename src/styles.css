@@ -705,6 +705,31 @@ h1.headline {
   color: var(--muted);
 }
 
+/* ---------- browser check ---------- */
+
+.check {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+/* Turnstile renders a fixed 300x65 widget; reserve the room so the form does
+   not jump when it arrives. */
+.check-widget:not(:empty) {
+  min-height: 65px;
+}
+
+.check-note {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.check-note-error {
+  color: var(--danger-ink);
+}
+
 /* ---------- log-result confirmation ---------- */
 
 .modal-done {

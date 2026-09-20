@@ -25,11 +25,26 @@ export function slugify(name) {
   return base || 'board'
 }
 
-export function slugSuffix(length = 5) {
-  const bytes = new Uint8Array(length)
-  crypto.getRandomValues(bytes)
+// Six characters out of a 31 character alphabet is a bit under 900 million
+// slugs per name, which is what makes scanning for other groups' boards
+// pointless. The alphabet leaves out the characters people mix up when reading
+// a link off a screenshot (i/l/1, o/0), because these get retyped by hand.
+export function slugSuffix(length = 6) {
+  const alphabet = SLUG_SUFFIX_ALPHABET
+  // Reject the tail of the byte range that would not divide evenly, so every
+  // character is equally likely rather than the first few being slightly
+  // favoured.
+  const limit = 256 - (256 % alphabet.length)
   let out = ''
-  for (const b of bytes) out += SLUG_SUFFIX_ALPHABET[b % SLUG_SUFFIX_ALPHABET.length]
+  while (out.length < length) {
+    const bytes = new Uint8Array(length)
+    crypto.getRandomValues(bytes)
+    for (const b of bytes) {
+      if (b >= limit) continue
+      out += alphabet[b % alphabet.length]
+      if (out.length === length) break
+    }
+  }
   return out
 }
 

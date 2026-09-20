@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react'
 import { createGroup } from '../api.js'
 import { Link } from '../router.jsx'
 import { IconBack } from '../icons.jsx'
+import TurnstileField from '../TurnstileField.jsx'
+import { useTurnstile } from '../useTurnstile.js'
 // The same parser the create-group function runs, so the count shown here is
 // exactly what ends up on the board.
 import { parseRoster, MAX_GROUP_NAME, MAX_ROSTER } from '../../functions/_lib/text.js'
@@ -12,8 +14,9 @@ export default function NewGroup() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
 
+  const turnstile = useTurnstile()
   const names = useMemo(() => parseRoster(roster), [roster])
-  const ready = name.trim().length > 0 && names.length >= 2
+  const ready = name.trim().length > 0 && names.length >= 2 && turnstile.ready
 
   async function submit(event) {
     event.preventDefault()
@@ -21,13 +24,15 @@ export default function NewGroup() {
     setSubmitting(true)
     setError(null)
     try {
-      const created = await createGroup(name, roster)
+      const created = await createGroup(name, roster, turnstile.token)
       // A full navigation so the board arrives with its own title and share
       // tags already in the page.
       window.location.assign(`/g/${encodeURIComponent(created.slug)}`)
     } catch (err) {
       setError(err.message)
       setSubmitting(false)
+      // The token was spent on that attempt, so the next one needs a fresh one.
+      turnstile.reset()
     }
   }
 
@@ -80,6 +85,8 @@ export default function NewGroup() {
           />
           <p className="hint">{rosterHint(names)}</p>
         </div>
+
+        <TurnstileField turnstile={turnstile} />
 
         <div className="modal-foot">
           <button type="submit" className="btn" disabled={!ready || submitting}>

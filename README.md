@@ -90,15 +90,57 @@ Two environment variables, set in the Cloudflare Pages project settings
 | --- | --- |
 | `SUPABASE_URL` | `https://<project>.supabase.co` |
 | `SUPABASE_ANON_KEY` | the project's anon key |
+| `TURNSTILE_SITE_KEY` | the Turnstile widget's site key (public) |
+| `TURNSTILE_SECRET_KEY` | the Turnstile secret key (server only) |
 
-Neither is committed. For local development, copy `.dev.vars.example` to
+None of them are committed. For local development, copy `.dev.vars.example` to
 `.dev.vars`, which is gitignored.
+
+**Set all four before deploying this.** Creating a group and logging a result
+both refuse to write when `TURNSTILE_SECRET_KEY` is absent, and say so, rather
+than waving writes through. Reading a board, the screenshot view and the
+preview image are unaffected either way.
+
+## Abuse guardrails
+
+There are no accounts, so the write endpoints are open to anybody with the
+link. Three things sit in front of them.
+
+**Turnstile** on the two write actions, creating a group and logging a result.
+The browser solves a challenge, and the corresponding Pages Function verifies
+that token with Cloudflare before anything is inserted. Verification happens
+after the cheap input checks, so a half-filled form does not spend a token, and
+before any database call, so an unverified request never reaches Supabase. A
+token is good once: any failed attempt resets the widget and the next try needs
+a fresh one.
+
+The site key is public but still comes from the environment, handed to the
+browser by `/api/config`, so no key is baked into a build. If the widget cannot
+load at all, the form says so and stays unsubmittable rather than failing
+silently.
+
+**Slugs** carry a six character random suffix from a 31 character alphabet,
+just under 900 million per group name, which is what makes scanning for other
+groups' boards pointless. The alphabet leaves out the characters people confuse
+when reading a link off a screenshot.
+
+**Database caps**, as triggers, in `0003_abuse_caps.sql`: 50 names per board and
+500 results per board per day. They are backstops rather than product limits,
+and they hold no matter who is inserting, including anything writing with the
+anon key directly instead of going through the functions. The app's own roster
+limit is 40, under the 50. When one fires, `/api/*` turns it into a readable
+message instead of a generic failure.
+
+Starting and ending seasons are deliberately not behind Turnstile. They are
+writes, but they need an existing board's slug, one season runs at a time, and
+the scope given was the two forms.
 
 ## Database
 
-The schema is already applied to the Supabase project. `supabase/migrations/`
-is kept for reference and local parity: `0001_init.sql` for the base tables and
-`0002_seasons_and_stats.sql` for seasons and the four functions.
+The schema is applied to the Supabase project. `supabase/migrations/` is kept
+for reference and local parity: `0001_init.sql` for the base tables,
+`0002_seasons_and_stats.sql` for seasons and the four functions, and
+`0003_abuse_caps.sql` for the two cap triggers.
 
 Row level security is on, and every policy is wide open: anyone with the anon
 key can read and insert. That is deliberate, because no authentication exists

@@ -3,6 +3,7 @@
 import { client, SupabaseError } from '../../_lib/supabase.js'
 import { json, fail, methodNotAllowed } from '../../_lib/http.js'
 import { buildSlug, cleanGroupName, parseRoster, MAX_ROSTER } from '../../_lib/text.js'
+import { verifyTurnstile } from '../../_lib/turnstile.js'
 
 export const onRequestGet = () => methodNotAllowed('POST')
 
@@ -19,6 +20,11 @@ export async function onRequestPost({ request, env }) {
 
   if (!name) return fail(400, 'Give the group a name.')
   if (roster.length < 2) return fail(400, 'Add at least two names to the roster.')
+
+  // After the cheap checks, so a mistyped form does not burn the token, but
+  // before anything touches the database.
+  const check = await verifyTurnstile(env, payload?.turnstileToken)
+  if (!check.ok) return fail(check.status, check.message)
 
   const db = client(env)
 
